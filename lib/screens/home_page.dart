@@ -1,3 +1,4 @@
+import 'dart:async'; // [BARU] Import Timer
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../blocs/home/home_bloc.dart';
@@ -17,9 +18,56 @@ class _HomePageState extends State<HomePage> {
   int _selectedFilterIndex = 0;
   final List<String> _filters = ['All Products', 'Best Seller', 'Vol 1', 'New Arrival'];
 
+  // 👇 [BARU] Konfigurasi Auto-Slide Banner 👇
+  final PageController _pageController = PageController();
+  Timer? _bannerTimer;
+  int _currentBannerIndex = 0;
+
+  final List<Map<String, String>> _bannerData = [
+    {
+      'image': 'assets/images/first_banner.png',
+      'subtitle': '',
+      'title': ''
+    },
+    {
+      'image': 'assets/images/second_banner.png',
+      'subtitle': '',
+      'title': ''
+    },
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    // Mengatur Timer untuk menggeser banner setiap 4 detik
+    _bannerTimer = Timer.periodic(const Duration(seconds: 4), (Timer timer) {
+      if (_currentBannerIndex < _bannerData.length - 1) {
+        _currentBannerIndex++;
+      } else {
+        _currentBannerIndex = 0; // Kembali ke awal jika sudah di ujung
+      }
+
+      if (_pageController.hasClients) {
+        _pageController.animateToPage(
+          _currentBannerIndex,
+          duration: const Duration(milliseconds: 600),
+          curve: Curves.easeInOutQuart, // Animasi transisi yang elegan
+        );
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    // [PENTING] Matikan timer dan controller saat pindah halaman agar tidak bocor memori (Memory Leak)
+    _bannerTimer?.cancel();
+    _pageController.dispose();
+    super.dispose();
+  }
+  // 👆 ========================================== 👆
+
   @override
   Widget build(BuildContext context) {
-    // Injeksi BLoC dan Repository di level Halaman
     return BlocProvider(
       create: (context) => HomeBloc(productRepository: ProductRepository())..add(FetchHomeData()),
       child: Scaffold(
@@ -38,7 +86,7 @@ class _HomePageState extends State<HomePage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildHeader(),
-                      _buildBannerSlider(),
+                      _buildBannerSlider(), // Memanggil Banner Baru
                       _buildFilters(),
                       _buildProductGrid(state),
                     ],
@@ -63,7 +111,7 @@ class _HomePageState extends State<HomePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Hi, Sean',
+                'Hi, Guest',
                 style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: Colors.black87),
               ),
               SizedBox(height: 4),
@@ -80,7 +128,7 @@ class _HomePageState extends State<HomePage> {
             ),
             child: const CircleAvatar(
               radius: 22,
-              backgroundImage: NetworkImage('https://ui-avatars.com/api/?name=Sean+Alden&background=0D8ABC&color=fff'),
+              backgroundImage: NetworkImage('https://ui-avatars.com/api/?name=Guest+User&background=0D8ABC&color=fff'),
             ),
           ),
         ],
@@ -88,15 +136,23 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  // 👇 [BARU] UI BANNER YANG SUDAH DINAMIS 👇
   Widget _buildBannerSlider() {
     return SizedBox(
       height: 180,
-      child: PageView(
+      child: PageView.builder(
+        controller: _pageController,
         physics: const BouncingScrollPhysics(),
-        children: [
-          _bannerItem('assets/images/first_banner.png', 'EXCLUSIVE', 'Discover Volume 1'),
-          _bannerItem('assets/images/second_banner.png', 'SUMMER SALE', 'Up to 50% Off'),
-        ],
+        itemCount: _bannerData.length,
+        onPageChanged: (index) {
+          setState(() {
+            _currentBannerIndex = index;
+          });
+        },
+        itemBuilder: (context, index) {
+          final banner = _bannerData[index];
+          return _bannerItem(banner['image']!, banner['subtitle']!, banner['title']!);
+        },
       ),
     );
   }
