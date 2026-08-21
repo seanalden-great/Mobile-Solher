@@ -1,0 +1,87 @@
+import 'package:dio/dio.dart';
+import '../models/user_model.dart';
+
+class AuthRepository {
+  final Dio _dio = Dio();
+  final String baseUrl = 'https://back.solher.co.id/api';
+
+  // --- LOGIN ---
+  Future<Map<String, dynamic>> login(
+      String email, String password, String captchaToken) async {
+    try {
+      final response = await _dio.post('$baseUrl/login', data: {
+        'email': email,
+        'password': password,
+        'captcha_token': captchaToken, // Diwajibkan oleh backend Laravel Anda
+      });
+
+      return {
+        'token': response.data['access_token'],
+        'user': UserModel.fromJson(response.data['user']),
+      };
+    } on DioException catch (e) {
+      final errorMessage =
+          e.response?.data['message'] ?? 'Gagal menghubungi server.';
+      throw Exception(errorMessage);
+    }
+  }
+
+  // --- REGISTER ---
+  Future<void> register(
+      String firstName, String lastName, String email, String password) async {
+    try {
+      await _dio.post('$baseUrl/register', data: {
+        'first_name': firstName,
+        'last_name': lastName,
+        'email': email,
+        'password': password,
+      });
+    } on DioException catch (e) {
+      // Menangkap error validasi 422 dari Laravel (contoh: email sudah dipakai)
+      if (e.response?.statusCode == 422) {
+        final errors = e.response?.data as Map<String, dynamic>;
+        final firstError = errors.values.first[0]; // Ambil pesan error pertama
+        throw Exception(firstError);
+      }
+      throw Exception(e.response?.data['message'] ?? 'Pendaftaran gagal.');
+    }
+  }
+
+  // --- FORGOT PASSWORD (KIRIM OTP) ---
+  Future<void> sendResetCode(String email) async {
+    try {
+      await _dio
+          .post('$baseUrl/forgot-password/send-code', data: {'email': email});
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ?? 'Gagal mengirim OTP.');
+    }
+  }
+
+  // --- FORGOT PASSWORD (VERIFIKASI OTP) ---
+  Future<void> verifyResetCode(String email, String code) async {
+    try {
+      await _dio.post('$baseUrl/forgot-password/verify-code', data: {
+        'email': email,
+        'code': code,
+      });
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ?? 'Kode verifikasi salah.');
+    }
+  }
+
+  // --- FORGOT PASSWORD (UBAH PASSWORD BARU) ---
+  Future<void> resetPassword(String email, String code, String password,
+      String confirmPassword) async {
+    try {
+      await _dio.post('$baseUrl/forgot-password/reset', data: {
+        'email': email,
+        'code': code,
+        'password': password,
+        'password_confirmation': confirmPassword,
+      });
+    } on DioException catch (e) {
+      throw Exception(
+          e.response?.data['message'] ?? 'Gagal mengubah password.');
+    }
+  }
+}
