@@ -1,4 +1,4 @@
-import '../../models/user_model.dart';
+import 'package:solher_mobile/models/user_model.dart';
 
 abstract class AuthState {}
 

@@ -1,69 +1,678 @@
+// import 'package:flutter/material.dart';
+// import 'package:flutter_bloc/flutter_bloc.dart';
+// import '../blocs/auth/auth_bloc.dart';
+// import '../blocs/auth/auth_event.dart';
+// import '../blocs/auth/auth_state.dart';
+
+// class ProfilePage extends StatelessWidget {
+//   const ProfilePage({super.key});
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(
+//         title: const Text('My Profile',
+//             style: TextStyle(fontWeight: FontWeight.w900, fontFamily: 'serif')),
+//         backgroundColor: Colors.white,
+//         foregroundColor: Colors.black,
+//         elevation: 1,
+//       ),
+//       body: BlocBuilder<AuthBloc, AuthState>(
+//         builder: (context, state) {
+//           if (state is AuthAuthenticated) {
+//             return Center(
+//               child: Column(
+//                 mainAxisAlignment: MainAxisAlignment.center,
+//                 children: [
+//                   const CircleAvatar(
+//                     radius: 50,
+//                     backgroundImage: NetworkImage(
+//                         'https://ui-avatars.com/api/?name=User&background=000&color=fff'),
+//                   ),
+//                   const SizedBox(height: 24),
+//                   const Text(
+//                     'Selamat Datang!',
+//                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+//                   ),
+//                   const SizedBox(height: 8),
+//                   Text(
+//                     'Profil Anda aman dilindungi otentikasi.',
+//                     style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+//                   ),
+//                   const SizedBox(height: 40),
+
+//                   // 👇 Tombol Logout 👇
+//                   ElevatedButton.icon(
+//                     style: ElevatedButton.styleFrom(
+//                         backgroundColor: Colors.red.shade50,
+//                         foregroundColor: Colors.red,
+//                         elevation: 0,
+//                         padding: const EdgeInsets.symmetric(
+//                             horizontal: 24, vertical: 12)),
+//                     icon: const Icon(Icons.logout),
+//                     label: const Text('Logout',
+//                         style: TextStyle(fontWeight: FontWeight.bold)),
+//                     onPressed: () {
+//                       // Trigger event logout ke BLoC (pastikan LogoutRequested sudah ada di AuthEvent Anda)
+//                       context.read<AuthBloc>().add(LogoutRequested());
+//                     },
+//                   )
+//                 ],
+//               ),
+//             );
+//           }
+
+//           return const Center(child: Text('Akses Ditolak.'));
+//         },
+//       ),
+//     );
+//   }
+// }
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import '../blocs/auth/auth_bloc.dart';
 import '../blocs/auth/auth_event.dart';
 import '../blocs/auth/auth_state.dart';
+import '../blocs/address/address_bloc.dart';
+import '../blocs/address/address_event.dart';
+import '../blocs/address/address_state.dart';
+import '../repositories/address_repository.dart';
+import 'package:solher_mobile/models/address_model.dart'; // Sesuaikan
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Profile',
-            style: TextStyle(fontWeight: FontWeight.w900, fontFamily: 'serif')),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 1,
-      ),
-      body: BlocBuilder<AuthBloc, AuthState>(
-        builder: (context, state) {
-          if (state is AuthAuthenticated) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const CircleAvatar(
-                    radius: 50,
-                    backgroundImage: NetworkImage(
-                        'https://ui-avatars.com/api/?name=User&background=000&color=fff'),
-                  ),
-                  const SizedBox(height: 24),
-                  const Text(
-                    'Selamat Datang!',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Profil Anda aman dilindungi otentikasi.',
-                    style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
-                  ),
-                  const SizedBox(height: 40),
+  State<ProfilePage> createState() => _ProfilePageState();
+}
 
-                  // 👇 Tombol Logout 👇
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red.shade50,
-                        foregroundColor: Colors.red,
-                        elevation: 0,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 24, vertical: 12)),
-                    icon: const Icon(Icons.logout),
-                    label: const Text('Logout',
-                        style: TextStyle(fontWeight: FontWeight.bold)),
-                    onPressed: () {
-                      // Trigger event logout ke BLoC (pastikan LogoutRequested sudah ada di AuthEvent Anda)
-                      context.read<AuthBloc>().add(LogoutRequested());
-                    },
-                  )
+class _ProfilePageState extends State<ProfilePage> {
+  // Logika Tier Solher Club
+  Map<String, dynamic> _getUserTier(int points) {
+    if (points < 2500) {
+      return {
+        'name': 'Silver',
+        'colors': [Colors.grey.shade400, Colors.grey.shade600],
+        'icon': '🥈',
+        'next': 2500,
+        'nextName': 'Gold'
+      };
+    } else if (points < 10000) {
+      return {
+        'name': 'Gold',
+        'colors': [Colors.amber.shade400, Colors.orange.shade700],
+        'icon': '🥇',
+        'next': 10000,
+        'nextName': 'Platinum'
+      };
+    } else {
+      return {
+        'name': 'Platinum',
+        'colors': [Colors.indigo.shade400, Colors.purple.shade700],
+        'icon': '💎',
+        'next': null,
+        'nextName': null
+      };
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      // 👇 Memicu pengambilan data alamat saat halaman dibuka 👇
+      create: (context) => AddressBloc(addressRepository: AddressRepository())
+        ..add(FetchAddresses()),
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF9FAFB), // bg-gray-50
+        appBar: AppBar(
+          title: const Text('My Account',
+              style:
+                  TextStyle(fontWeight: FontWeight.w900, fontFamily: 'serif')),
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black,
+          elevation: 0.5,
+          centerTitle: false,
+        ),
+        body: BlocBuilder<AuthBloc, AuthState>(
+          builder: (context, state) {
+            if (state is AuthAuthenticated) {
+              // Asumsi UserModel Anda bisa diakses via state.user
+              // Jika propertinya berbeda (misal: user.firstName), silakan disesuaikan
+              final user = state.user;
+
+              // Fallback nilai (sesuaikan dengan UserModel aktual Anda)
+              final String firstName = user.firstName ?? '';
+              final String email = user.email ?? '';
+              final String phone = user.phone ?? '';
+              final int points = user.point ?? 0;
+              final String avatarUrl = user.profileImage ??
+                  'https://ui-avatars.com/api/?name=$firstName&background=000&color=fff';
+
+              return SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // --- HEADER SECTION ---
+                    const Text('Manage your details and address',
+                        style: TextStyle(color: Colors.grey, fontSize: 14)),
+                    const SizedBox(height: 24),
+
+                    // --- GAMIFIKASI BANNER (Opsional disederhanakan) ---
+                    _buildCompletenessBanner(firstName, email, phone),
+                    const SizedBox(height: 24),
+
+                    // --- PROFILE CARD ---
+                    _buildProfileCard(
+                        context, firstName, email, phone, avatarUrl),
+                    const SizedBox(height: 24),
+
+                    // --- SOLHER CLUB TIER CARD ---
+                    _buildSolherClubCard(points),
+                    const SizedBox(height: 24),
+
+                    // --- SHORTCUT BUTTONS ---
+                    _buildMenuButton(Icons.favorite_border, 'My Wishlist',
+                        'View your saved items', Colors.red, () {}),
+                    const SizedBox(height: 12),
+                    _buildMenuButton(
+                        Icons.campaign_outlined,
+                        'Program Afiliasi',
+                        'Dapatkan Komisi Khusus!',
+                        Colors.amber.shade600,
+                        () {}),
+                    const SizedBox(height: 32),
+
+                    // --- ADDRESSES SECTION (TERHUBUNG KE BLOC) ---
+                    const Text('Shipping Addresses',
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 16),
+                    _buildAddressSection(),
+                    const SizedBox(height: 40),
+                  ],
+                ),
+              );
+            }
+
+            return const Center(child: Text('Akses Ditolak. Silakan Login.'));
+          },
+        ),
+      ),
+    );
+  }
+
+  // 👇 BANNER KELENGKAPAN PROFIL 👇
+  Widget _buildCompletenessBanner(String name, String email, String phone) {
+    int score = 0;
+    if (name.isNotEmpty) score += 30;
+    if (email.isNotEmpty) score += 30;
+    if (phone.isNotEmpty) score += 40; // Simulasi logic
+
+    if (score == 100) return const SizedBox.shrink();
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+            colors: [Colors.blue.shade900, Colors.blue.shade800]),
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('Sempurnakan Profil Anda',
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16)),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                    color: Colors.blue.shade100,
+                    borderRadius: BorderRadius.circular(20)),
+                child: Text('$score%',
+                    style: TextStyle(
+                        color: Colors.blue.shade900,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12)),
+              )
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+              'Lengkapi data diri Anda untuk pengalaman belanja yang lebih aman.',
+              style: TextStyle(color: Colors.blue.shade200, fontSize: 12)),
+          const SizedBox(height: 16),
+          LinearProgressIndicator(
+              value: score / 100,
+              backgroundColor: Colors.blue.shade900,
+              color: Colors.cyanAccent),
+        ],
+      ),
+    );
+  }
+
+  // 👇 KARTU INFORMASI PENGGUNA 👇
+  Widget _buildProfileCard(BuildContext context, String name, String email,
+      String phone, String avatar) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withOpacity(0.02),
+              blurRadius: 10,
+              offset: const Offset(0, 4))
+        ],
+      ),
+      child: Column(
+        children: [
+          Container(
+            height: 80,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                  colors: [Color(0xFFE5E7EB), Color(0xFFF3F4F6)]),
+              borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(24), topRight: Radius.circular(24)),
+            ),
+          ),
+          Transform.translate(
+            offset: const Offset(0, -40),
+            child: Column(
+              children: [
+                CircleAvatar(
+                    radius: 46,
+                    backgroundColor: Colors.white,
+                    child: CircleAvatar(
+                        radius: 42, backgroundImage: NetworkImage(avatar))),
+                const SizedBox(height: 12),
+                Text(name,
+                    style: const TextStyle(
+                        fontSize: 20, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 16),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    children: [
+                      _buildInfoRow(Icons.email_outlined, 'Email', email),
+                      const SizedBox(height: 12),
+                      _buildInfoRow(Icons.phone_outlined, 'Telepon',
+                          phone.isEmpty ? '(Belum diisi)' : phone),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12))),
+                          onPressed: () {}, // TODO: Modal Edit Profile
+                          child: const Text('Edit Profil',
+                              style: TextStyle(color: Colors.black87)),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      IconButton(
+                        style: IconButton.styleFrom(
+                            backgroundColor: Colors.red.shade50,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12))),
+                        icon: const Icon(Icons.logout,
+                            color: Colors.red, size: 20),
+                        onPressed: () {
+                          // Trigger logout
+                          context.read<AuthBloc>().add(LogoutRequested());
+                        },
+                      ),
+                    ],
+                  ),
+                )
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(IconData icon, String label, String value) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+          color: Colors.grey.shade50,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade100)),
+      child: Row(
+        children: [
+          Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                  color: Colors.white, borderRadius: BorderRadius.circular(8)),
+              child: Icon(icon, size: 16, color: Colors.grey.shade600)),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label.toUpperCase(),
+                    style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey,
+                        letterSpacing: 1)),
+                Text(value,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w500, fontSize: 13),
+                    overflow: TextOverflow.ellipsis),
+              ],
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  // 👇 KARTU TIER SOLHER CLUB 👇
+  Widget _buildSolherClubCard(int points) {
+    final tier = _getUserTier(points);
+
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+            colors: tier['colors'],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+              color: tier['colors'][0].withOpacity(0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 6))
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('SOLHER CLUB',
+              style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 2)),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Text(tier['icon'], style: const TextStyle(fontSize: 24)),
+              const SizedBox(width: 8),
+              Text('${tier['name']} TIER',
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 1)),
+            ],
+          ),
+          const SizedBox(height: 24),
+          const Text('AVAILABLE POINTS',
+              style: TextStyle(
+                  color: Colors.white70, fontSize: 10, letterSpacing: 1)),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text('$points',
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 40,
+                      fontWeight: FontWeight.w900)),
+              const Padding(
+                  padding: EdgeInsets.only(bottom: 8.0, left: 4.0),
+                  child: Text('Pts',
+                      style: TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.bold))),
+            ],
+          ),
+          if (tier['next'] != null) ...[
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(tier['name'],
+                    style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold)),
+                Text(tier['nextName'],
+                    style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold)),
+              ],
+            ),
+            const SizedBox(height: 6),
+            LinearProgressIndicator(
+                value: points / tier['next'],
+                backgroundColor: Colors.black26,
+                color: Colors.white,
+                minHeight: 6,
+                borderRadius: BorderRadius.circular(10)),
+          ]
+        ],
+      ),
+    );
+  }
+
+  // 👇 TOMBOL MENU 👇
+  Widget _buildMenuButton(IconData icon, String title, String subtitle,
+      Color color, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+            color: Colors.white,
+            border: Border.all(color: Colors.grey.shade200),
+            borderRadius: BorderRadius.circular(20)),
+        child: Row(
+          children: [
+            Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                    color: color.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12)),
+                child: Icon(icon, color: color)),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 14)),
+                  Text(subtitle,
+                      style: const TextStyle(color: Colors.grey, fontSize: 11)),
                 ],
               ),
-            );
-          }
+            ),
+            Icon(Icons.chevron_right, color: Colors.grey.shade400)
+          ],
+        ),
+      ),
+    );
+  }
 
-          return const Center(child: Text('Akses Ditolak.'));
-        },
+  // 👇 DAFTAR ALAMAT DENGAN BLOC 👇
+  Widget _buildAddressSection() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(color: Colors.grey.shade200),
+          borderRadius: BorderRadius.circular(24)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.blue.shade700,
+                  side: BorderSide(color: Colors.blue.shade100),
+                  backgroundColor: Colors.blue.shade50,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12))),
+              icon: const Icon(Icons.add),
+              label: const Text('Tambah Alamat Baru',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+              onPressed: () {
+                // TODO: Buka BottomSheet untuk form tambah alamat
+              },
+            ),
+          ),
+          const SizedBox(height: 24),
+          BlocConsumer<AddressBloc, AddressState>(
+            listener: (context, state) {
+              if (state is AddressActionSuccess) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text(state.message),
+                    backgroundColor: Colors.green));
+              } else if (state is AddressError) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text(state.message), backgroundColor: Colors.red));
+              }
+            },
+            builder: (context, state) {
+              if (state is AddressLoading || state is AddressInitial) {
+                return const Center(
+                    child: Padding(
+                        padding: EdgeInsets.all(20.0),
+                        child: CircularProgressIndicator()));
+              } else if (state is AddressLoaded) {
+                if (state.addresses.isEmpty) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 20),
+                      child: Text('Belum ada alamat pengiriman.',
+                          style: TextStyle(color: Colors.grey)),
+                    ),
+                  );
+                }
+
+                return ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: state.addresses.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 16),
+                  itemBuilder: (context, index) {
+                    final addr = state.addresses[index];
+                    return _buildAddressCard(context, addr);
+                  },
+                );
+              }
+              return const SizedBox.shrink();
+            },
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAddressCard(BuildContext context, AddressModel addr) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+            color:
+                addr.isDefault ? Colors.blue.shade300 : Colors.grey.shade200),
+        boxShadow: addr.isDefault
+            ? [BoxShadow(color: Colors.blue.withOpacity(0.1), blurRadius: 10)]
+            : [],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.location_on,
+                      color: Colors.blue.shade500, size: 20),
+                  const SizedBox(width: 8),
+                  Text('${addr.firstName} ${addr.lastName}',
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 14)),
+                ],
+              ),
+              if (addr.isDefault)
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                      color: Colors.blue.shade50,
+                      borderRadius: BorderRadius.circular(8)),
+                  child: Text('UTAMA',
+                      style: TextStyle(
+                          color: Colors.blue.shade700,
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1)),
+                )
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(addr.location,
+              style: const TextStyle(
+                  color: Colors.black87, fontSize: 12, height: 1.5),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis),
+          const SizedBox(height: 4),
+          Text('${addr.city}, ${addr.province} ${addr.postalCode}',
+              style: const TextStyle(color: Colors.grey, fontSize: 12)),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              TextButton(
+                onPressed: () {}, // TODO: Modal Edit
+                child: const Text('Edit',
+                    style: TextStyle(
+                        color: Colors.grey,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12)),
+              ),
+              TextButton(
+                onPressed: () {
+                  // Trigger Hapus Alamat
+                  context.read<AddressBloc>().add(DeleteAddressEvent(addr.id!));
+                },
+                child: const Text('Hapus',
+                    style: TextStyle(
+                        color: Colors.red,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12)),
+              ),
+            ],
+          )
+        ],
       ),
     );
   }

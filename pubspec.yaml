@@ -40,6 +40,7 @@ dependencies:
   shared_preferences: ^2.3.3
   http: ^1.6.0
   equatable: ^2.1.0
+  intl: ^0.20.2
 
 dev_dependencies:
   flutter_test:
@@ -51,6 +52,12 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^4.0.0
+  flutter_launcher_icons: ^0.13.1
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/solherbrandbook.png"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -72,6 +79,7 @@ flutter:
     - assets/images/first_banner.png
     - assets/images/second_banner.png
     - assets/images/solherbrandbook.png
+    - assets/images/profile.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

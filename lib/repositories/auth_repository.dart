@@ -1,5 +1,7 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
-import '../models/user_model.dart';
+import 'package:solher_mobile/models/user_model.dart';
 
 class AuthRepository {
   final Dio _dio = Dio();
@@ -18,6 +20,7 @@ class AuthRepository {
       return {
         'token': response.data['access_token'],
         'user': UserModel.fromJson(response.data['user']),
+        'user_json': json.encode(response.data['user']),
       };
     } on DioException catch (e) {
       final errorMessage =
