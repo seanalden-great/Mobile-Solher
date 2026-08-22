@@ -48,7 +48,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 // Import BLoC dan Repository Autentikasi
 import 'package:solher_mobile/blocs/auth/auth_bloc.dart';
 import 'package:solher_mobile/blocs/auth/auth_event.dart';
+import 'package:solher_mobile/blocs/order/order_bloc.dart';
 import 'package:solher_mobile/repositories/auth_repository.dart';
+import 'package:solher_mobile/repositories/order_repository.dart';
 
 // Import layar utama
 import 'package:solher_mobile/screens/main_navigation.dart';
@@ -69,6 +71,11 @@ class SolherApp extends StatelessWidget {
             authRepository: AuthRepository(),
           )..add(
               CheckLoginStatusEvent()), // 👇 [PENTING] Eksekusi cek sesi di sini! 👇
+        ),
+        BlocProvider<OrderBloc>(
+          create: (context) => OrderBloc(
+            orderRepository: OrderRepository(),
+          ),
         ),
       ],
       child: MaterialApp(
