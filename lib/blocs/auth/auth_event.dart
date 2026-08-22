@@ -37,3 +37,20 @@ class ResetPasswordRequested extends AuthEvent {
 class LogoutRequested extends AuthEvent {}
 
 class CheckLoginStatusEvent extends AuthEvent {}
+
+class UpdateProfileRequested extends AuthEvent {
+  final String firstName;
+  final String lastName;
+  final String email;
+  final String phone;
+  UpdateProfileRequested(
+      {required this.firstName,
+      required this.lastName,
+      required this.email,
+      required this.phone});
+}
+
+class UpdateProfileImageRequested extends AuthEvent {
+  final String filePath;
+  UpdateProfileImageRequested(this.filePath);
+}

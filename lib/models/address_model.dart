@@ -31,7 +31,7 @@ class AddressModel {
     this.latitude,
     this.longitude,
     required this.isDefault,
-    this.createdAt,
+    this.createdAt, 
   });
 
   factory AddressModel.fromJson(Map<String, dynamic> json) {

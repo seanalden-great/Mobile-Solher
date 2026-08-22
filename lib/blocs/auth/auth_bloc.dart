@@ -123,5 +123,32 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       await prefs.remove('user_data'); // 👇 [BARU] Hapus data user juga
       emit(AuthUnauthenticated());
     });
+
+    // LOGIKA UPDATE PROFIL
+    on<UpdateProfileRequested>((event, emit) async {
+      emit(AuthLoading());
+      try {
+        final result = await authRepository.updateProfileInfo(
+            event.firstName, event.lastName, event.email, event.phone);
+        emit(AuthActionSuccess(
+            result['message'] ?? 'Profil berhasil diperbarui.'));
+        emit(AuthAuthenticated(result['user'])); // Segarkan UI dengan data baru
+      } catch (e) {
+        emit(AuthError(e.toString().replaceAll('Exception: ', '')));
+      }
+    });
+
+    // LOGIKA UPDATE FOTO PROFIL
+    on<UpdateProfileImageRequested>((event, emit) async {
+      emit(AuthLoading());
+      try {
+        final result = await authRepository.updateProfileImage(event.filePath);
+        emit(AuthActionSuccess(
+            result['message'] ?? 'Foto profil berhasil diperbarui.'));
+        emit(AuthAuthenticated(result['user'])); // Segarkan UI dengan data baru
+      } catch (e) {
+        emit(AuthError(e.toString().replaceAll('Exception: ', '')));
+      }
+    });
   }
 }

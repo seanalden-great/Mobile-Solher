@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:solher_mobile/models/user_model.dart';
 
 class AuthRepository {
@@ -85,6 +86,56 @@ class AuthRepository {
     } on DioException catch (e) {
       throw Exception(
           e.response?.data['message'] ?? 'Gagal mengubah password.');
+    }
+  }
+
+  // --- UPDATE PROFIL ---
+  Future<Map<String, dynamic>> updateProfileInfo(
+      String firstName, String lastName, String email, String phone) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+      final response = await _dio.post(
+        '$baseUrl/user/update-info', // Sesuaikan endpoint Laravel Anda
+        data: {
+          'first_name': firstName,
+          'last_name': lastName,
+          'email': email,
+          'phone': phone
+        },
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+
+      final updatedUser = UserModel.fromJson(response.data['user']);
+      await prefs.setString('user_data', json.encode(response.data['user']));
+      return {'user': updatedUser, 'message': response.data['message']};
+    } on DioException catch (e) {
+      throw Exception(
+          e.response?.data['message'] ?? 'Gagal memperbarui profil.');
+    }
+  }
+
+  // --- UPDATE FOTO PROFIL ---
+  Future<Map<String, dynamic>> updateProfileImage(String filePath) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+      final formData = FormData.fromMap({
+        'image': await MultipartFile.fromFile(filePath),
+      });
+
+      final response = await _dio.post(
+        '$baseUrl/user/update-image', // Sesuaikan endpoint Laravel Anda
+        data: formData,
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+
+      final updatedUser = UserModel.fromJson(response.data['user']);
+      await prefs.setString('user_data', json.encode(response.data['user']));
+      return {'user': updatedUser, 'message': response.data['message']};
+    } on DioException catch (e) {
+      throw Exception(
+          e.response?.data['message'] ?? 'Gagal mengunggah foto profil.');
     }
   }
 }
