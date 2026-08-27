@@ -1533,6 +1533,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:solher_mobile/screens/about_us_page.dart';
+import 'package:solher_mobile/screens/faq_page.dart';
 import 'package:solher_mobile/screens/favorite_page.dart';
 
 import '../blocs/auth/auth_bloc.dart';
@@ -1987,6 +1989,27 @@ class _ProfilePageState extends State<ProfilePage> {
                         'Dapatkan Komisi Khusus!',
                         Colors.amber.shade600,
                         () {}),
+                    // 👇 TAMBAHKAN DUA MENU INI 👇
+                    const SizedBox(height: 12),
+                    _buildMenuButton(
+                        Icons.help_outline,
+                        'Bantuan & FAQ',
+                        'Temukan jawaban pertanyaan Anda',
+                        Colors.blue.shade600, () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const FaqPage()),
+                      );
+                    }),
+                    const SizedBox(height: 12),
+                    // _buildMenuButton(Icons.info_outline, 'Tentang Solher',
+                    //     'Kisah dan filosofi kami', Colors.teal.shade600, () {
+                    //   Navigator.push(
+                    //     context,
+                    //     MaterialPageRoute(builder: (_) => const AboutUsPage()),
+                    //   );
+                    // }),
+                    // 👆 ======================= 👆
                     const SizedBox(height: 32),
                     const Text('Shipping Addresses',
                         style: TextStyle(
