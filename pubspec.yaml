@@ -43,6 +43,7 @@ dependencies:
   intl: ^0.20.2
   url_launcher: ^6.3.1
   image_picker: ^1.1.2
+  webview_flutter: ^4.8.0
 
 dev_dependencies:
   flutter_test:
@@ -82,6 +83,15 @@ flutter:
     - assets/images/second_banner.png
     - assets/images/solherbrandbook.png
     - assets/images/profile.png
+
+    - assets/icons/anteraja.png
+    - assets/icons/gojek.png
+    - assets/icons/grab.png
+    - assets/icons/jne.png
+    - assets/icons/jnt.png
+    - assets/icons/ninja.png
+    - assets/icons/paxel.png
+    - assets/icons/sicepat.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

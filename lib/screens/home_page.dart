@@ -3563,14 +3563,756 @@
 //   }
 // }
 
+// import 'dart:async';
+// import 'package:flutter/material.dart';
+// import 'package:flutter_bloc/flutter_bloc.dart';
+
+// import 'package:solher_mobile/models/category_model.dart';
+// import 'package:solher_mobile/models/product_model.dart';
+// import 'package:solher_mobile/screens/product_detail_page.dart';
+// import 'package:solher_mobile/screens/cart_page.dart'; // 👇 Import halaman Cart 👇
+
+// import '../blocs/category/category_bloc.dart';
+// import '../blocs/category/category_event.dart';
+// import '../blocs/category/category_state.dart';
+// import '../blocs/product/product_bloc.dart';
+// import '../blocs/product/product_event.dart';
+// import '../blocs/product/product_state.dart';
+// import '../repositories/category_repository.dart';
+// import '../repositories/product_repository.dart';
+
+// import '../blocs/auth/auth_bloc.dart';
+// import '../blocs/auth/auth_state.dart';
+
+// // 👇 Import BLoC dan Repository untuk Keranjang 👇
+// import '../blocs/cart/cart_bloc.dart';
+// import '../blocs/cart/cart_event.dart';
+// import '../blocs/cart/cart_state.dart';
+// import '../repositories/cart_repository.dart';
+
+// class HomePage extends StatefulWidget {
+//   const HomePage({super.key});
+
+//   @override
+//   State<HomePage> createState() => _HomePageState();
+// }
+
+// class _HomePageState extends State<HomePage> {
+//   int _selectedFilterIndex = 0;
+
+//   final PageController _pageController = PageController();
+//   Timer? _bannerTimer;
+//   int _currentBannerIndex = 0;
+
+//   final ScrollController _scrollController = ScrollController();
+//   bool _isFetchingMore = false;
+
+//   final List<Map<String, String>> _bannerData = [
+//     {'image': 'assets/images/first_banner.png', 'subtitle': '', 'title': ''},
+//     {'image': 'assets/images/second_banner.png', 'subtitle': '', 'title': ''},
+//   ];
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     _setupBannerTimer();
+//     _scrollController.addListener(_onScroll);
+//   }
+
+//   void _setupBannerTimer() {
+//     _bannerTimer = Timer.periodic(const Duration(seconds: 4), (Timer timer) {
+//       if (_currentBannerIndex < _bannerData.length - 1) {
+//         _currentBannerIndex++;
+//       } else {
+//         _currentBannerIndex = 0;
+//       }
+//       if (_pageController.hasClients) {
+//         _pageController.animateToPage(
+//           _currentBannerIndex,
+//           duration: const Duration(milliseconds: 600),
+//           curve: Curves.easeInOutQuart,
+//         );
+//       }
+//     });
+//   }
+
+//   void _onScroll() {
+//     if (_scrollController.position.pixels >=
+//         _scrollController.position.maxScrollExtent * 0.8) {
+//       if (!_isFetchingMore) {
+//         setState(() => _isFetchingMore = true);
+//         Future.delayed(const Duration(seconds: 2), () {
+//           if (mounted) setState(() => _isFetchingMore = false);
+//         });
+//       }
+//     }
+//   }
+
+//   @override
+//   void dispose() {
+//     _bannerTimer?.cancel();
+//     _pageController.dispose();
+//     _scrollController.dispose();
+//     super.dispose();
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return MultiBlocProvider(
+//       providers: [
+//         BlocProvider(
+//           create: (context) =>
+//               CategoryBloc(categoryRepository: CategoryRepository())
+//                 ..add(FetchCategories()),
+//         ),
+//         BlocProvider(
+//           create: (context) =>
+//               ProductBloc(productRepository: ProductRepository())
+//                 ..add(FetchActiveProductsEvent()),
+//         ),
+//         // 👇 DAFTARKAN CART BLOC DI SINI 👇
+//         BlocProvider(
+//           create: (context) =>
+//               CartBloc(cartRepository: CartRepository())..add(FetchCartEvent()),
+//         ),
+//       ],
+//       child: Scaffold(
+//         backgroundColor: Colors.white,
+//         appBar: AppBar(
+//           title: const Text('Home',
+//               style:
+//                   TextStyle(fontWeight: FontWeight.w900, fontFamily: 'serif')),
+//           backgroundColor: Colors.grey[500],
+//           foregroundColor: Colors.white,
+//           elevation: 2,
+//           centerTitle: true,
+//           // 👇 TAMBAHKAN ICON KERANJANG DI SINI 👇
+//           actions: [
+//             BlocBuilder<CartBloc, CartState>(
+//               builder: (context, state) {
+//                 int cartItemCount = 0;
+//                 if (state is CartLoaded) {
+//                   // Hitung total kuantitas barang di keranjang
+//                   cartItemCount =
+//                       state.items.fold(0, (sum, item) => sum + item.quantity);
+//                 }
+
+//                 return Stack(
+//                   alignment: Alignment.center,
+//                   children: [
+//                     IconButton(
+//                       icon: const Icon(Icons.shopping_bag_outlined),
+//                       onPressed: () {
+//                         // Cek login status sebelum membuka Cart
+//                         final authState = context.read<AuthBloc>().state;
+//                         if (authState is AuthAuthenticated) {
+//                           Navigator.push(
+//                             context,
+//                             MaterialPageRoute(
+//                               builder: (_) => BlocProvider.value(
+//                                 value: context
+//                                     .read<CartBloc>(), // Bawa state keranjang
+//                                 child: const CartPage(),
+//                               ),
+//                             ),
+//                           ).then((_) {
+//                             // Segarkan keranjang saat kembali dari halaman Cart
+//                             context.read<CartBloc>().add(FetchCartEvent());
+//                           });
+//                         } else {
+//                           ScaffoldMessenger.of(context).showSnackBar(
+//                               const SnackBar(
+//                                   content:
+//                                       Text("Silakan login terlebih dahulu"),
+//                                   backgroundColor: Colors.red));
+//                         }
+//                       },
+//                     ),
+//                     if (cartItemCount > 0)
+//                       Positioned(
+//                         right: 8,
+//                         top: 8,
+//                         child: Container(
+//                           padding: const EdgeInsets.all(4),
+//                           decoration: const BoxDecoration(
+//                             color: Colors.red,
+//                             shape: BoxShape.circle,
+//                           ),
+//                           child: Text(
+//                             '$cartItemCount',
+//                             style: const TextStyle(
+//                               color: Colors.white,
+//                               fontSize: 10,
+//                               fontWeight: FontWeight.bold,
+//                             ),
+//                           ),
+//                         ),
+//                       )
+//                   ],
+//                 );
+//               },
+//             ),
+//             const SizedBox(width: 8),
+//           ],
+//         ),
+//         body: SafeArea(
+//           child: SingleChildScrollView(
+//             physics: const BouncingScrollPhysics(),
+//             child: Column(
+//               crossAxisAlignment: CrossAxisAlignment.start,
+//               children: [
+//                 _buildHeader(),
+//                 _buildBannerSlider(),
+//                 _buildCategoryFilters(),
+//                 _buildHorizontalProductList(),
+//                 _buildBestSellerSection(),
+//                 _buildValueProposition(),
+//                 const SizedBox(height: 40),
+//               ],
+//             ),
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+
+//   Widget _buildHeader() {
+//     return BlocBuilder<AuthBloc, AuthState>(
+//       builder: (context, state) {
+//         String displayName = 'Guest';
+//         ImageProvider avatarImage =
+//             const AssetImage('assets/images/profile.png');
+
+//         if (state is AuthAuthenticated) {
+//           final user = state.user;
+//           displayName = user.firstName;
+//           if (user.profileImage != null && user.profileImage!.isNotEmpty) {
+//             avatarImage = NetworkImage(user.profileImage!);
+//           }
+//         }
+
+//         return Padding(
+//           padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+//           child: Row(
+//             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//             children: [
+//               Column(
+//                 crossAxisAlignment: CrossAxisAlignment.start,
+//                 children: [
+//                   Text(
+//                     'Hi, $displayName',
+//                     style: const TextStyle(
+//                         fontSize: 26,
+//                         fontWeight: FontWeight.w900,
+//                         color: Colors.black87),
+//                   ),
+//                   const SizedBox(height: 4),
+//                   const Text(
+//                     'Discover your unique style',
+//                     style: TextStyle(
+//                         fontSize: 14,
+//                         color: Colors.grey,
+//                         fontWeight: FontWeight.w500),
+//                   ),
+//                 ],
+//               ),
+//               Container(
+//                 decoration: BoxDecoration(
+//                   shape: BoxShape.circle,
+//                   border: Border.all(color: Colors.black12, width: 2),
+//                 ),
+//                 child: CircleAvatar(
+//                   radius: 22,
+//                   backgroundImage: avatarImage,
+//                   backgroundColor: Colors.grey.shade200,
+//                 ),
+//               ),
+//             ],
+//           ),
+//         );
+//       },
+//     );
+//   }
+
+//   Widget _buildBannerSlider() {
+//     return SizedBox(
+//       height: 200,
+//       child: PageView.builder(
+//         controller: _pageController,
+//         physics: const BouncingScrollPhysics(),
+//         itemCount: _bannerData.length,
+//         onPageChanged: (index) => setState(() => _currentBannerIndex = index),
+//         itemBuilder: (context, index) {
+//           final banner = _bannerData[index];
+//           return _bannerItem(
+//               banner['image']!, banner['subtitle']!, banner['title']!);
+//         },
+//       ),
+//     );
+//   }
+
+//   Widget _bannerItem(String assetPath, String subtitle, String title) {
+//     return Container(
+//       margin: const EdgeInsets.symmetric(horizontal: 24.0),
+//       decoration: BoxDecoration(
+//         borderRadius: BorderRadius.circular(16),
+//         image: DecorationImage(
+//           image: AssetImage(assetPath),
+//           fit: BoxFit.cover,
+//           colorFilter:
+//               ColorFilter.mode(Colors.black.withOpacity(0.3), BlendMode.darken),
+//         ),
+//       ),
+//       child: Padding(
+//         padding: const EdgeInsets.all(24.0),
+//         child: Column(
+//           crossAxisAlignment: CrossAxisAlignment.start,
+//           mainAxisAlignment: MainAxisAlignment.end,
+//           children: [
+//             Text(
+//               subtitle,
+//               style: const TextStyle(
+//                   color: Colors.white70,
+//                   fontSize: 12,
+//                   fontWeight: FontWeight.w800,
+//                   letterSpacing: 2),
+//             ),
+//             const SizedBox(height: 4),
+//             Text(
+//               title,
+//               style: const TextStyle(
+//                   color: Colors.white,
+//                   fontSize: 24,
+//                   fontWeight: FontWeight.w900),
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+
+//   Widget _buildCategoryFilters() {
+//     return BlocBuilder<CategoryBloc, CategoryState>(
+//       builder: (context, state) {
+//         if (state is CategoryLoading || state is CategoryInitial) {
+//           return const Padding(
+//             padding: EdgeInsets.symmetric(vertical: 24.0, horizontal: 24.0),
+//             child: LinearProgressIndicator(color: Colors.black),
+//           );
+//         } else if (state is CategoryLoaded) {
+//           final List<Category> filterCategories = [
+//             Category(id: 0, code: 'ALL', name: 'All Products'),
+//             ...state.categories
+//           ];
+
+//           return Padding(
+//             padding: const EdgeInsets.symmetric(vertical: 32.0),
+//             child: Column(
+//               crossAxisAlignment: CrossAxisAlignment.start,
+//               children: [
+//                 const Padding(
+//                   padding: EdgeInsets.symmetric(horizontal: 24.0),
+//                   child: Text(
+//                     "Our Collections",
+//                     style: TextStyle(
+//                         fontSize: 24,
+//                         fontStyle: FontStyle.italic,
+//                         fontWeight: FontWeight.w300),
+//                   ),
+//                 ),
+//                 const SizedBox(height: 16),
+//                 SizedBox(
+//                   height: 35,
+//                   child: ListView.builder(
+//                     scrollDirection: Axis.horizontal,
+//                     physics: const BouncingScrollPhysics(),
+//                     padding: const EdgeInsets.symmetric(horizontal: 24.0),
+//                     itemCount: filterCategories.length,
+//                     itemBuilder: (context, index) {
+//                       bool isSelected = _selectedFilterIndex == index;
+//                       final category = filterCategories[index];
+
+//                       return GestureDetector(
+//                         onTap: () {
+//                           setState(() => _selectedFilterIndex = index);
+
+//                           if (category.id == 0) {
+//                             context
+//                                 .read<ProductBloc>()
+//                                 .add(FetchActiveProductsEvent());
+//                           } else {
+//                             context.read<ProductBloc>().add(
+//                                 FetchProductsByCategoryEvent(category.id!));
+//                           }
+//                         },
+//                         child: Container(
+//                           margin: const EdgeInsets.only(right: 24),
+//                           child: Column(
+//                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//                             crossAxisAlignment: CrossAxisAlignment.center,
+//                             children: [
+//                               Text(
+//                                 category.name.toUpperCase(),
+//                                 style: TextStyle(
+//                                   color: isSelected
+//                                       ? Colors.black
+//                                       : Colors.grey.shade400,
+//                                   fontWeight: FontWeight.w800,
+//                                   fontSize: 12,
+//                                   letterSpacing: 1.5,
+//                                 ),
+//                               ),
+//                               if (isSelected)
+//                                 Container(
+//                                   height: 4,
+//                                   width: 4,
+//                                   decoration: const BoxDecoration(
+//                                       color: Colors.black,
+//                                       shape: BoxShape.circle),
+//                                 )
+//                             ],
+//                           ),
+//                         ),
+//                       );
+//                     },
+//                   ),
+//                 ),
+//               ],
+//             ),
+//           );
+//         } else if (state is CategoryError) {
+//           return Padding(
+//             padding: const EdgeInsets.all(24.0),
+//             child: Text("Gagal memuat kategori: ${state.message}",
+//                 style: const TextStyle(color: Colors.red)),
+//           );
+//         }
+//         return const SizedBox.shrink();
+//       },
+//     );
+//   }
+
+//   Widget _buildHorizontalProductList() {
+//     return BlocBuilder<ProductBloc, ProductState>(
+//       builder: (context, state) {
+//         if (state is ProductLoading && !_isFetchingMore) {
+//           return const Center(
+//             child: Padding(
+//                 padding: EdgeInsets.all(40.0),
+//                 child: CircularProgressIndicator(color: Colors.black)),
+//           );
+//         } else if (state is ProductError) {
+//           return Center(child: Text(state.message));
+//         } else if (state is ProductListLoaded) {
+//           final displayData = state.products;
+
+//           if (displayData.isEmpty) {
+//             return const Padding(
+//               padding: EdgeInsets.all(24.0),
+//               child: Center(
+//                   child: Text("Tidak ada produk.",
+//                       style: TextStyle(color: Colors.grey))),
+//             );
+//           }
+
+//           return SizedBox(
+//             height: 320,
+//             child: ListView.builder(
+//               controller: _scrollController,
+//               scrollDirection: Axis.horizontal,
+//               physics: const BouncingScrollPhysics(),
+//               padding: const EdgeInsets.symmetric(horizontal: 24.0),
+//               itemCount: displayData.length + (_isFetchingMore ? 1 : 0),
+//               itemBuilder: (context, index) {
+//                 if (index == displayData.length) {
+//                   return const Padding(
+//                     padding: EdgeInsets.symmetric(horizontal: 24.0),
+//                     child: Center(
+//                         child: CircularProgressIndicator(color: Colors.black)),
+//                   );
+//                 }
+
+//                 return Padding(
+//                   padding: const EdgeInsets.only(right: 16.0),
+//                   child: SizedBox(
+//                     width: 180,
+//                     child: _buildProductCard(context, displayData[index]),
+//                   ),
+//                 );
+//               },
+//             ),
+//           );
+//         }
+//         return const SizedBox.shrink();
+//       },
+//     );
+//   }
+
+//   Widget _buildBestSellerSection() {
+//     return BlocProvider(
+//       create: (context) => ProductBloc(productRepository: ProductRepository())
+//         ..add(FetchBestSellersEvent()),
+//       child: Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           const Padding(
+//             padding: EdgeInsets.only(
+//                 left: 24.0, right: 24.0, top: 40.0, bottom: 16.0),
+//             child: Column(
+//               crossAxisAlignment: CrossAxisAlignment.start,
+//               children: [
+//                 Text(
+//                   "Best Sellers",
+//                   style: TextStyle(
+//                       fontSize: 24,
+//                       fontStyle: FontStyle.italic,
+//                       fontWeight: FontWeight.w300),
+//                 ),
+//                 SizedBox(height: 4),
+//                 Text(
+//                   "OUR MOST LOVED PIECES",
+//                   style: TextStyle(
+//                       fontSize: 10,
+//                       fontWeight: FontWeight.bold,
+//                       letterSpacing: 2,
+//                       color: Colors.grey),
+//                 ),
+//               ],
+//             ),
+//           ),
+//           BlocBuilder<ProductBloc, ProductState>(
+//             builder: (context, state) {
+//               if (state is ProductLoading) {
+//                 return const Center(
+//                   child: Padding(
+//                       padding: EdgeInsets.all(40.0),
+//                       child: CircularProgressIndicator(color: Colors.black)),
+//                 );
+//               } else if (state is ProductError) {
+//                 return Center(child: Text(state.message));
+//               } else if (state is ProductListLoaded) {
+//                 final displayData = state.products;
+
+//                 if (displayData.isEmpty) {
+//                   return const Padding(
+//                     padding: EdgeInsets.all(24.0),
+//                     child: Center(
+//                         child: Text("Tidak ada produk best seller.",
+//                             style: TextStyle(color: Colors.grey))),
+//                   );
+//                 }
+
+//                 return SizedBox(
+//                   height: 320,
+//                   child: ListView.builder(
+//                     scrollDirection: Axis.horizontal,
+//                     physics: const BouncingScrollPhysics(),
+//                     padding: const EdgeInsets.symmetric(horizontal: 24.0),
+//                     itemCount: displayData.length,
+//                     itemBuilder: (context, index) {
+//                       return Padding(
+//                         padding: const EdgeInsets.only(right: 16.0),
+//                         child: SizedBox(
+//                           width: 180,
+//                           child: _buildProductCard(context, displayData[index]),
+//                         ),
+//                       );
+//                     },
+//                   ),
+//                 );
+//               }
+//               return const SizedBox.shrink();
+//             },
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+
+//   Widget _buildProductCard(BuildContext context, ProductModel product) {
+//     bool hasDiscount =
+//         product.discountPrice != null && product.discountPrice! > 0;
+
+//     return GestureDetector(
+//       onTap: () {
+//         Navigator.push(
+//           context,
+//           MaterialPageRoute(
+//             builder: (_) => ProductDetailPage(initialProduct: product),
+//           ),
+//         ).then((_) {
+//           // Segarkan BLoC Cart jika user kembali dari halaman detail produk
+//           context.read<CartBloc>().add(FetchCartEvent());
+//         });
+//       },
+//       child: Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           Expanded(
+//             child: Container(
+//               decoration: BoxDecoration(
+//                 color: Colors.grey[100],
+//                 borderRadius: BorderRadius.circular(12),
+//                 image: product.image != null
+//                     ? DecorationImage(
+//                         image: NetworkImage(product.image!), fit: BoxFit.cover)
+//                     : null,
+//               ),
+//               child: Stack(
+//                 children: [
+//                   Positioned(
+//                     top: 12,
+//                     left: 12,
+//                     child: Container(
+//                       padding: const EdgeInsets.symmetric(
+//                           horizontal: 8, vertical: 4),
+//                       decoration: BoxDecoration(
+//                         color: Colors.black,
+//                         borderRadius: BorderRadius.circular(20),
+//                       ),
+//                       child: const Text(
+//                         'HOT',
+//                         style: TextStyle(
+//                             color: Colors.white,
+//                             fontSize: 9,
+//                             fontWeight: FontWeight.bold,
+//                             letterSpacing: 1.5),
+//                       ),
+//                     ),
+//                   ),
+//                 ],
+//               ),
+//             ),
+//           ),
+//           const SizedBox(height: 12),
+//           Text(
+//             product.name.toUpperCase(),
+//             style: const TextStyle(
+//                 fontSize: 11,
+//                 fontWeight: FontWeight.w800,
+//                 color: Colors.black87,
+//                 letterSpacing: 1.2),
+//             maxLines: 1,
+//             overflow: TextOverflow.ellipsis,
+//           ),
+//           const SizedBox(height: 4),
+//           Row(
+//             children: [
+//               if (hasDiscount) ...[
+//                 Text(
+//                   'Rp ${product.discountPrice!.toStringAsFixed(0)}',
+//                   style: const TextStyle(
+//                       fontSize: 13,
+//                       fontWeight: FontWeight.w900,
+//                       color: Colors.red),
+//                 ),
+//                 const SizedBox(width: 6),
+//                 Text(
+//                   'Rp ${product.price.toStringAsFixed(0)}',
+//                   style: const TextStyle(
+//                       fontSize: 10,
+//                       color: Colors.grey,
+//                       decoration: TextDecoration.lineThrough),
+//                 ),
+//               ] else ...[
+//                 Text(
+//                   'Rp ${product.price.toStringAsFixed(0)}',
+//                   style: const TextStyle(
+//                       fontSize: 13,
+//                       fontWeight: FontWeight.w900,
+//                       color: Colors.black),
+//                 ),
+//               ]
+//             ],
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+
+//   Widget _buildValueProposition() {
+//     return Container(
+//       width: double.infinity,
+//       margin: const EdgeInsets.only(top: 40),
+//       padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
+//       decoration: const BoxDecoration(
+//         color: Color(0xFFFAFAFA),
+//         border: Border(top: BorderSide(color: Colors.black12)),
+//       ),
+//       child: Column(
+//         children: [
+//           const Text(
+//             "Why Choose Solher",
+//             style: TextStyle(
+//                 fontSize: 24,
+//                 fontStyle: FontStyle.italic,
+//                 fontWeight: FontWeight.w300),
+//           ),
+//           const SizedBox(height: 4),
+//           const Text(
+//             "THE SOLHER DIFFERENCE",
+//             style: TextStyle(
+//                 fontSize: 10,
+//                 fontWeight: FontWeight.bold,
+//                 letterSpacing: 2,
+//                 color: Colors.grey),
+//           ),
+//           const SizedBox(height: 32),
+//           Row(
+//             crossAxisAlignment: CrossAxisAlignment.start,
+//             children: [
+//               Expanded(
+//                   child: _buildValueItem(
+//                       Icons.diamond_outlined,
+//                       'PREMIUM MATERIALS',
+//                       'Crafted with the finest vegan leather.')),
+//               const SizedBox(width: 16),
+//               Expanded(
+//                   child: _buildValueItem(
+//                       Icons.design_services_outlined,
+//                       'UNIQUE DESIGN',
+//                       'Stand out with our exclusive silhouettes.')),
+//             ],
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+
+//   Widget _buildValueItem(IconData icon, String title, String desc) {
+//     return Column(
+//       children: [
+//         Container(
+//           padding: const EdgeInsets.all(16),
+//           decoration:
+//               const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+//           child: Icon(icon, size: 28, color: Colors.black87),
+//         ),
+//         const SizedBox(height: 12),
+//         Text(title,
+//             textAlign: TextAlign.center,
+//             style: const TextStyle(
+//                 fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1)),
+//         const SizedBox(height: 6),
+//         Text(desc,
+//             textAlign: TextAlign.center,
+//             style:
+//                 const TextStyle(fontSize: 11, color: Colors.grey, height: 1.4)),
+//       ],
+//     );
+//   }
+// }
+
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:http/http.dart' as http; // 👇 Import HTTP untuk API Claim Promo
 
 import 'package:solher_mobile/models/category_model.dart';
 import 'package:solher_mobile/models/product_model.dart';
 import 'package:solher_mobile/screens/product_detail_page.dart';
-import 'package:solher_mobile/screens/cart_page.dart'; // 👇 Import halaman Cart 👇
+import 'package:solher_mobile/screens/cart_page.dart';
 
 import '../blocs/category/category_bloc.dart';
 import '../blocs/category/category_event.dart';
@@ -3584,7 +4326,6 @@ import '../repositories/product_repository.dart';
 import '../blocs/auth/auth_bloc.dart';
 import '../blocs/auth/auth_state.dart';
 
-// 👇 Import BLoC dan Repository untuk Keranjang 👇
 import '../blocs/cart/cart_bloc.dart';
 import '../blocs/cart/cart_event.dart';
 import '../blocs/cart/cart_state.dart';
@@ -3607,6 +4348,9 @@ class _HomePageState extends State<HomePage> {
   final ScrollController _scrollController = ScrollController();
   bool _isFetchingMore = false;
 
+  // 👇 PERBAIKAN: Flag agar Popup hanya muncul 1x per sesi aplikasi 👇
+  static bool _hasShownPromoPopup = false;
+
   final List<Map<String, String>> _bannerData = [
     {'image': 'assets/images/first_banner.png', 'subtitle': '', 'title': ''},
     {'image': 'assets/images/second_banner.png', 'subtitle': '', 'title': ''},
@@ -3617,6 +4361,25 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     _setupBannerTimer();
     _scrollController.addListener(_onScroll);
+
+    // 👇 LOGIKA PEMUNCULAN POPUP OTOMATIS 👇
+    if (!_hasShownPromoPopup) {
+      _hasShownPromoPopup = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        // Tunda 2 detik setelah halaman home selesai di-render
+        Future.delayed(const Duration(seconds: 2), () {
+          if (mounted) {
+            showDialog(
+              context: context,
+              barrierDismissible: true,
+              builder: (BuildContext context) {
+                return const PromoPopupDialog();
+              },
+            );
+          }
+        });
+      });
+    }
   }
 
   void _setupBannerTimer() {
@@ -3670,7 +4433,6 @@ class _HomePageState extends State<HomePage> {
               ProductBloc(productRepository: ProductRepository())
                 ..add(FetchActiveProductsEvent()),
         ),
-        // 👇 DAFTARKAN CART BLOC DI SINI 👇
         BlocProvider(
           create: (context) =>
               CartBloc(cartRepository: CartRepository())..add(FetchCartEvent()),
@@ -3686,13 +4448,11 @@ class _HomePageState extends State<HomePage> {
           foregroundColor: Colors.white,
           elevation: 2,
           centerTitle: true,
-          // 👇 TAMBAHKAN ICON KERANJANG DI SINI 👇
           actions: [
             BlocBuilder<CartBloc, CartState>(
               builder: (context, state) {
                 int cartItemCount = 0;
                 if (state is CartLoaded) {
-                  // Hitung total kuantitas barang di keranjang
                   cartItemCount =
                       state.items.fold(0, (sum, item) => sum + item.quantity);
                 }
@@ -3703,20 +4463,17 @@ class _HomePageState extends State<HomePage> {
                     IconButton(
                       icon: const Icon(Icons.shopping_bag_outlined),
                       onPressed: () {
-                        // Cek login status sebelum membuka Cart
                         final authState = context.read<AuthBloc>().state;
                         if (authState is AuthAuthenticated) {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (_) => BlocProvider.value(
-                                value: context
-                                    .read<CartBloc>(), // Bawa state keranjang
+                                value: context.read<CartBloc>(),
                                 child: const CartPage(),
                               ),
                             ),
                           ).then((_) {
-                            // Segarkan keranjang saat kembali dari halaman Cart
                             context.read<CartBloc>().add(FetchCartEvent());
                           });
                         } else {
@@ -4141,7 +4898,6 @@ class _HomePageState extends State<HomePage> {
             builder: (_) => ProductDetailPage(initialProduct: product),
           ),
         ).then((_) {
-          // Segarkan BLoC Cart jika user kembali dari halaman detail produk
           context.read<CartBloc>().add(FetchCartEvent());
         });
       },
@@ -4299,6 +5055,500 @@ class _HomePageState extends State<HomePage> {
             style:
                 const TextStyle(fontSize: 11, color: Colors.grey, height: 1.4)),
       ],
+    );
+  }
+}
+
+// ============================================================================
+// 👇 WIDGET BARU: PROMO POPUP DIALOG 👇
+// ============================================================================
+// class PromoPopupDialog extends StatefulWidget {
+//   const PromoPopupDialog({super.key});
+
+//   @override
+//   State<PromoPopupDialog> createState() => _PromoPopupDialogState();
+// }
+
+// class _PromoPopupDialogState extends State<PromoPopupDialog> {
+//   final TextEditingController _emailController = TextEditingController();
+//   bool _isLoading = false;
+
+//   Future<void> _claimPromo() async {
+//     final email = _emailController.text.trim();
+//     if (email.isEmpty) {
+//       ScaffoldMessenger.of(context).showSnackBar(
+//         const SnackBar(
+//           content: Text("Silakan masukkan email Anda"),
+//           backgroundColor: Colors.orange,
+//         ),
+//       );
+//       return;
+//     }
+
+//     setState(() => _isLoading = true);
+
+//     try {
+//       // Pastikan URL base API Anda sudah sesuai (Gunakan https://back.solher.co.id/api)
+//       const String baseUrl = 'https://back.solher.co.id/api';
+
+//       // Jika Anda menggunakan campaign spesifik seperti MERDEKA17, Anda bisa menyesuaikan Payloadnya.
+//       // Di sini kita ikuti default dari backend Anda.
+//       final response = await http.post(
+//         Uri.parse('$baseUrl/promo/claim'),
+//         headers: {
+//           'Content-Type': 'application/json',
+//           'Accept': 'application/json',
+//         },
+//         body: jsonEncode({
+//           'email': email,
+//           // 'campaign': 'SOLHER17' // Buka komentar ini jika Anda ingin memaksa claim ke campaign tertentu
+//         }),
+//       );
+
+//       final responseData = jsonDecode(response.body);
+
+//       if (response.statusCode == 200 || response.statusCode == 201) {
+//         if (mounted) {
+//           Navigator.pop(context); // Tutup dialog
+//           ScaffoldMessenger.of(context).showSnackBar(
+//             const SnackBar(
+//               content: Text("Promo berhasil diklaim! Silakan cek email Anda."),
+//               backgroundColor: Colors.green,
+//             ),
+//           );
+//         }
+//       } else {
+//         if (mounted) {
+//           ScaffoldMessenger.of(context).showSnackBar(
+//             SnackBar(
+//               content: Text(responseData['message'] ?? "Gagal klaim promo"),
+//               backgroundColor: Colors.red,
+//             ),
+//           );
+//         }
+//       }
+//     } catch (e) {
+//       if (mounted) {
+//         ScaffoldMessenger.of(context).showSnackBar(
+//           const SnackBar(
+//             content: Text("Terjadi kesalahan jaringan"),
+//             backgroundColor: Colors.red,
+//           ),
+//         );
+//       }
+//     } finally {
+//       if (mounted) setState(() => _isLoading = false);
+//     }
+//   }
+
+//   @override
+//   void dispose() {
+//     _emailController.dispose();
+//     super.dispose();
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Dialog(
+//       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+//       backgroundColor: Colors.white,
+//       clipBehavior: Clip.hardEdge,
+//       insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+//       child: SingleChildScrollView(
+//         child: Column(
+//           mainAxisSize: MainAxisSize.min,
+//           children: [
+//             // Gambar Header Banner
+//             Stack(
+//               children: [
+//                 SizedBox(
+//                   height: 180,
+//                   width: double.infinity,
+//                   child: Image.asset(
+//                     'assets/images/second_banner.png', // Ganti dengan asset banner pop-up Anda
+//                     fit: BoxFit.cover,
+//                   ),
+//                 ),
+//                 // Tombol Close
+//                 Positioned(
+//                   top: 8,
+//                   right: 8,
+//                   child: GestureDetector(
+//                     onTap: () => Navigator.pop(context),
+//                     child: Container(
+//                       padding: const EdgeInsets.all(4),
+//                       decoration: const BoxDecoration(
+//                         color: Colors.black26,
+//                         shape: BoxShape.circle,
+//                       ),
+//                       child: const Icon(Icons.close,
+//                           color: Colors.white, size: 20),
+//                     ),
+//                   ),
+//                 )
+//               ],
+//             ),
+
+//             // Konten Teks & Form
+//             Padding(
+//               padding: const EdgeInsets.all(24.0),
+//               child: Column(
+//                 children: [
+//                   const Text(
+//                     "UNLOCK 10% OFF",
+//                     textAlign: TextAlign.center,
+//                     style: TextStyle(
+//                       fontSize: 22,
+//                       fontWeight: FontWeight.w900,
+//                       fontFamily: 'serif',
+//                       letterSpacing: 1,
+//                     ),
+//                   ),
+//                   const SizedBox(height: 8),
+//                   const Text(
+//                     "Daftar ke newsletter kami dan dapatkan potongan eksklusif untuk pesanan pertama Anda.",
+//                     textAlign: TextAlign.center,
+//                     style: TextStyle(
+//                       fontSize: 12,
+//                       color: Colors.grey,
+//                       height: 1.5,
+//                     ),
+//                   ),
+//                   const SizedBox(height: 24),
+
+//                   // Form Email
+//                   TextField(
+//                     controller: _emailController,
+//                     keyboardType: TextInputType.emailAddress,
+//                     decoration: InputDecoration(
+//                       hintText: 'Masukkan email Anda...',
+//                       hintStyle:
+//                           const TextStyle(fontSize: 12, color: Colors.black38),
+//                       filled: true,
+//                       fillColor: Colors.grey.shade50,
+//                       contentPadding: const EdgeInsets.symmetric(
+//                           horizontal: 16, vertical: 14),
+//                       border: OutlineInputBorder(
+//                         borderRadius: BorderRadius.circular(12),
+//                         borderSide: const BorderSide(color: Colors.black12),
+//                       ),
+//                       focusedBorder: OutlineInputBorder(
+//                         borderRadius: BorderRadius.circular(12),
+//                         borderSide:
+//                             const BorderSide(color: Colors.black, width: 1.5),
+//                       ),
+//                     ),
+//                   ),
+//                   const SizedBox(height: 16),
+
+//                   // Tombol Claim
+//                   SizedBox(
+//                     width: double.infinity,
+//                     child: ElevatedButton(
+//                       style: ElevatedButton.styleFrom(
+//                         backgroundColor: Colors.black,
+//                         padding: const EdgeInsets.symmetric(vertical: 16),
+//                         shape: RoundedRectangleBorder(
+//                           borderRadius: BorderRadius.circular(12),
+//                         ),
+//                       ),
+//                       onPressed: _isLoading ? null : _claimPromo,
+//                       child: _isLoading
+//                           ? const SizedBox(
+//                               height: 16,
+//                               width: 16,
+//                               child: CircularProgressIndicator(
+//                                 color: Colors.white,
+//                                 strokeWidth: 2,
+//                               ),
+//                             )
+//                           : const Text(
+//                               'CLAIM MY DISCOUNT',
+//                               style: TextStyle(
+//                                 color: Colors.white,
+//                                 fontSize: 11,
+//                                 fontWeight: FontWeight.bold,
+//                                 letterSpacing: 1.5,
+//                               ),
+//                             ),
+//                     ),
+//                   ),
+//                   const SizedBox(height: 12),
+//                   const Text(
+//                     "No spam. Only the good stuff.",
+//                     style: TextStyle(fontSize: 10, color: Colors.black38),
+//                   )
+//                 ],
+//               ),
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+// }
+
+// ============================================================================
+// 👇 WIDGET BARU: PROMO POPUP DIALOG (SAMA PERSIS DENGAN VUE) 👇
+// ============================================================================
+class PromoPopupDialog extends StatefulWidget {
+  const PromoPopupDialog({super.key});
+
+  @override
+  State<PromoPopupDialog> createState() => _PromoPopupDialogState();
+}
+
+class _PromoPopupDialogState extends State<PromoPopupDialog> {
+  final TextEditingController _emailController = TextEditingController();
+  bool _isLoading = false;
+
+  Future<void> _claimPromo() async {
+    final email = _emailController.text.trim();
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Silakan masukkan email Anda"),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      const String baseUrl = 'https://back.solher.co.id/api';
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/promo/claim'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode({
+          'email': email,
+        }),
+      );
+
+      final responseData = jsonDecode(response.body);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        if (mounted) {
+          Navigator.pop(context); // Tutup dialog
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Promo berhasil diklaim! Silakan cek email Anda."),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(responseData['message'] ?? "Gagal klaim promo"),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Terjadi kesalahan jaringan"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Sesuai dengan Vue: Gambar dihilangkan pada tampilan mobile,
+    // border dibikin tajam (tidak melengkung), teks diselaraskan.
+    return Dialog(
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+      backgroundColor: Colors.white,
+      clipBehavior: Clip.hardEdge,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      child: Stack(
+        children: [
+          SingleChildScrollView(
+            child: Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 24.0, vertical: 40.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // Logo Solher
+                  Image.asset(
+                    'assets/images/solherbrandbook.png',
+                    height: 32,
+                    errorBuilder: (context, error, stackTrace) => const Text(
+                      'SOLHER',
+                      style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w900,
+                          fontFamily: 'serif',
+                          letterSpacing: 2),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+
+                  // Title (Popup First CTA)
+                  RichText(
+                    textAlign: TextAlign.center,
+                    text: const TextSpan(
+                      style: TextStyle(
+                        fontFamily: 'serif',
+                        color: Color(0xFF111111),
+                        height: 1.2,
+                      ),
+                      children: [
+                        TextSpan(
+                          text: "AMBIL DISKON\n",
+                          style: TextStyle(
+                              fontSize: 26, fontWeight: FontWeight.bold),
+                        ),
+                        TextSpan(
+                          text: "Rp 250.000 OFF\n",
+                          style: TextStyle(
+                              fontSize: 28, fontWeight: FontWeight.w900),
+                        ),
+                        TextSpan(
+                          text: "UNTUK PESANAN PERTAMA",
+                          style: TextStyle(
+                              fontSize: 26, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Subtitle Minimum Price
+                  RichText(
+                    textAlign: TextAlign.center,
+                    text: const TextSpan(
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: Colors.black87,
+                        fontFamily: 'serif',
+                        height: 1.5,
+                      ),
+                      children: [
+                        TextSpan(text: "Berlaku untuk semua produk dengan\n"),
+                        TextSpan(
+                          text: "minimal pembelian Rp 1.500.000",
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Deskripsi
+                  const Text(
+                    "Dapatkan info terbaru dan penawaran eksklusif langsung di kotak masuk Anda.",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF444444),
+                      height: 1.5,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Input Email
+                  TextField(
+                    controller: _emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    textAlign: TextAlign.center,
+                    decoration: const InputDecoration(
+                      hintText: 'Masukkan alamat email Anda',
+                      hintStyle: TextStyle(fontSize: 13, color: Colors.black45),
+                      filled: true,
+                      fillColor: Colors.white,
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.black),
+                        borderRadius: BorderRadius.zero,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.black, width: 1.5),
+                        borderRadius: BorderRadius.zero,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Tombol Claim
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.black,
+                        padding: const EdgeInsets.symmetric(vertical: 18),
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.zero,
+                        ),
+                        elevation: 0,
+                      ),
+                      onPressed: _isLoading ? null : _claimPromo,
+                      child: _isLoading
+                          ? const SizedBox(
+                              height: 16,
+                              width: 16,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Text(
+                              'KLAIM DISKON SAYA',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1.5,
+                              ),
+                            ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Footer Notes
+                  const Text(
+                    "No spam. Only the good stuff.",
+                    style: TextStyle(fontSize: 11, color: Colors.black54),
+                  )
+                ],
+              ),
+            ),
+          ),
+
+          // Tombol Close di pojok kanan atas
+          Positioned(
+            top: 8,
+            right: 8,
+            child: IconButton(
+              icon: const Icon(Icons.close, color: Colors.black54),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
