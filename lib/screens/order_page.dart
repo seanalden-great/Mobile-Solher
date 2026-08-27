@@ -1271,14 +1271,15 @@ class _OrderPageState extends State<OrderPage> {
       child: Scaffold(
         backgroundColor: const Color(0xFFFAFAFA),
         appBar: AppBar(
-          title: const Text('TRACK MY ORDER',
+          title: const Text('Orders',
               style: TextStyle(
                   fontWeight: FontWeight.w900,
                   fontFamily: 'serif',
                   letterSpacing: 1)),
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.black,
-          elevation: 1,
+          backgroundColor: Colors.grey[500],
+          foregroundColor: Colors.white,
+          elevation: 2,
+          centerTitle: true,
         ),
         body: Column(
           children: [

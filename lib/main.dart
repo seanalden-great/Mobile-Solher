@@ -48,8 +48,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 // Import BLoC dan Repository Autentikasi
 import 'package:solher_mobile/blocs/auth/auth_bloc.dart';
 import 'package:solher_mobile/blocs/auth/auth_event.dart';
+import 'package:solher_mobile/blocs/cart/cart_bloc.dart';
 import 'package:solher_mobile/blocs/order/order_bloc.dart';
 import 'package:solher_mobile/repositories/auth_repository.dart';
+import 'package:solher_mobile/repositories/cart_repository.dart';
 import 'package:solher_mobile/repositories/order_repository.dart';
 
 // Import layar utama
@@ -77,6 +79,11 @@ class SolherApp extends StatelessWidget {
             orderRepository: OrderRepository(),
           ),
         ),
+        BlocProvider<CartBloc>(
+            create: (context) => CartBloc(
+              cartRepository: CartRepository(),
+          )
+        )
       ],
       child: MaterialApp(
         title: 'Solher',

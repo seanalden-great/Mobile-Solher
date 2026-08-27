@@ -24,6 +24,17 @@ class _EventPageState extends State<EventPage> {
       create: (context) => EventBloc(eventRepository: EventRepository())..add(FetchEvents()),
       child: Scaffold(
         backgroundColor: const Color(0xFFFAFAFA),
+        appBar: AppBar(
+          title: const Text('Events',
+              style: TextStyle(
+                  fontWeight: FontWeight.w900,
+                  fontFamily: 'serif',
+                  letterSpacing: 1)),
+          backgroundColor: Colors.grey[500],
+          foregroundColor: Colors.white,
+          elevation: 2,
+          centerTitle: true,
+        ),
         body: SafeArea(
           child: CustomScrollView(
             physics: const BouncingScrollPhysics(),

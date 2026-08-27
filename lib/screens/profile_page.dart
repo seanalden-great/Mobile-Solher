@@ -1915,10 +1915,10 @@ class _ProfilePageState extends State<ProfilePage> {
           title: const Text('My Account',
               style:
                   TextStyle(fontWeight: FontWeight.w900, fontFamily: 'serif')),
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.black,
+          backgroundColor: Colors.grey[500],
+          foregroundColor: Colors.white,
           elevation: 0.5,
-          centerTitle: false,
+          centerTitle: true,
         ),
         body: BlocConsumer<AuthBloc, AuthState>(
           listener: (context, state) {
