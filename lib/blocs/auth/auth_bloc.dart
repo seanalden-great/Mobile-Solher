@@ -150,5 +150,22 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         emit(AuthError(e.toString().replaceAll('Exception: ', '')));
       }
     });
+
+    // LOGIKA TANGKAPAN GOOGLE LOGIN
+    on<GoogleAuthSuccessEvent>((event, emit) async {
+      emit(AuthLoading());
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('token', event.token);
+        await prefs.setString('user_data', event.userJsonString);
+
+        final userMap = json.decode(event.userJsonString);
+        final user = UserModel.fromJson(userMap);
+
+        emit(AuthAuthenticated(user));
+      } catch (e) {
+        emit(AuthError('Gagal memproses data Google.'));
+      }
+    });
   }
 }

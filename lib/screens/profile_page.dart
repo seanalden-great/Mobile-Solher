@@ -1533,7 +1533,14 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:solher_mobile/blocs/affiliate/affiliate_bloc.dart';
+import 'package:solher_mobile/blocs/contact/contact_bloc.dart';
 import 'package:solher_mobile/screens/about_us_page.dart';
+import 'package:solher_mobile/screens/contact_page.dart';
+// Tambahkan baris ini di bawah import halaman lainnya
+import 'package:solher_mobile/screens/terms_condition_page.dart';
+import 'package:solher_mobile/screens/privacy_policy_page.dart';
+import 'package:solher_mobile/screens/affiliate_dashboard.dart';
 import 'package:solher_mobile/screens/faq_page.dart';
 import 'package:solher_mobile/screens/favorite_page.dart';
 
@@ -1987,8 +1994,17 @@ class _ProfilePageState extends State<ProfilePage> {
                         Icons.campaign_outlined,
                         'Program Afiliasi',
                         'Dapatkan Komisi Khusus!',
-                        Colors.amber.shade600,
-                        () {}),
+                        Colors.amber.shade600, () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => BlocProvider(
+                            create: (context) => AffiliateBloc(),
+                            child: const AffiliateDashboardPage(),
+                          ),
+                        ),
+                      );
+                    }),
                     // 👇 TAMBAHKAN DUA MENU INI 👇
                     const SizedBox(height: 12),
                     _buildMenuButton(
@@ -2010,6 +2026,47 @@ class _ProfilePageState extends State<ProfilePage> {
                     //   );
                     // }),
                     // 👆 ======================= 👆
+                    // 👇 TAMBAHKAN DUA MENU INI DI SINI 👇
+                    const SizedBox(height: 12),
+                    _buildMenuButton(
+                        Icons.description_outlined,
+                        'Syarat & Ketentuan',
+                        'Kebijakan penggunaan layanan',
+                        Colors.blueGrey.shade600, () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const TermsConditionPage()),
+                      );
+                    }),
+                    const SizedBox(height: 12),
+                    // 👇 TAMBAHKAN MENU HUBUNGI KAMI 👇
+                    const SizedBox(height: 12),
+                    _buildMenuButton(Icons.headset_mic_outlined, 'Hubungi Kami',
+                        'Kirim pesan atau keluhan', Colors.orange.shade600, () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => BlocProvider(
+                            create: (context) => ContactBloc(),
+                            child: const ContactPage(),
+                          ),
+                        ),
+                      );
+                    }),
+                    // 👆 ======================= 👆
+                    _buildMenuButton(
+                        Icons.shield_outlined,
+                        'Kebijakan Privasi',
+                        'Bagaimana kami melindungi data Anda',
+                        Colors.indigo.shade600, () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const PrivacyPolicyPage()),
+                      );
+                    }),
+                    // 👆 ================================= 👆
                     const SizedBox(height: 32),
                     const Text('Shipping Addresses',
                         style: TextStyle(

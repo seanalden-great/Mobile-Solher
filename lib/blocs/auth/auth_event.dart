@@ -54,3 +54,9 @@ class UpdateProfileImageRequested extends AuthEvent {
   final String filePath;
   UpdateProfileImageRequested(this.filePath);
 }
+
+class GoogleAuthSuccessEvent extends AuthEvent {
+  final String token;
+  final String userJsonString;
+  GoogleAuthSuccessEvent({required this.token, required this.userJsonString});
+}

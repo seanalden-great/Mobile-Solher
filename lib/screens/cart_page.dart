@@ -2058,28 +2058,47 @@ class _CartPageState extends State<CartPage> {
                           //         });
                           //       },
 
+                          // onPressed: _selectedIds.isEmpty
+                          //     ? null
+                          //     : () {
+                          //         // 👇 PERBAIKAN: Suntikkan BLoC saat navigasi 👇
+                          //         Future.microtask(() {
+                          //           if (mounted) {
+                          //             Navigator.push(
+                          //               context,
+                          //               MaterialPageRoute(
+                          //                 builder: (_) => MultiBlocProvider(
+                          //                   providers: [
+                          //                     BlocProvider(
+                          //                       create: (context) => AddressBloc(
+                          //                           addressRepository:
+                          //                               AddressRepository()),
+                          //                     ),
+                          //                     BlocProvider(
+                          //                       create: (context) => CheckoutBloc(
+                          //                           repository:
+                          //                               CheckoutRepository()),
+                          //                     ),
+                          //                   ],
+                          //                   child: PaymentPage(
+                          //                       selectedCartIds: _selectedIds),
+                          //                 ),
+                          //               ),
+                          //             );
+                          //           }
+                          //         });
+                          //       },
                           onPressed: _selectedIds.isEmpty
                               ? null
                               : () {
-                                  // 👇 PERBAIKAN: Suntikkan BLoC saat navigasi 👇
+                                  // 👇 PERBAIKAN MUTLAK: Bawa memori CartBloc yang sudah matang ke PaymentPage 👇
                                   Future.microtask(() {
                                     if (mounted) {
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
-                                          builder: (_) => MultiBlocProvider(
-                                            providers: [
-                                              BlocProvider(
-                                                create: (context) => AddressBloc(
-                                                    addressRepository:
-                                                        AddressRepository()),
-                                              ),
-                                              BlocProvider(
-                                                create: (context) => CheckoutBloc(
-                                                    repository:
-                                                        CheckoutRepository()),
-                                              ),
-                                            ],
+                                          builder: (_) => BlocProvider.value(
+                                            value: context.read<CartBloc>(),
                                             child: PaymentPage(
                                                 selectedCartIds: _selectedIds),
                                           ),
