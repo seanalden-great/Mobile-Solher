@@ -2539,6 +2539,9 @@ import 'package:solher_mobile/screens/privacy_policy_page.dart';
 import 'package:solher_mobile/screens/affiliate_dashboard.dart';
 import 'package:solher_mobile/screens/faq_page.dart';
 import 'package:solher_mobile/screens/favorite_page.dart';
+import 'package:solher_mobile/screens/shipping_policy_page.dart';
+import 'package:solher_mobile/screens/refund_policy_page.dart';
+import 'package:solher_mobile/screens/customer_care_page.dart';
 
 import '../blocs/auth/auth_bloc.dart';
 import '../blocs/auth/auth_event.dart';
@@ -2990,12 +2993,55 @@ class _ProfilePageState extends State<ProfilePage> {
 
                     const SizedBox(height: 16),
 
+                    // // 👇 GRUP MENU 2: Bantuan & Legal 👇
+                    // _buildMenuGroup([
+                    //   _buildCompactMenuItem(
+                    //       Icons.headset_mic_outlined,
+                    //       'Hubungi Kami',
+                    //       'Kirim pesan atau keluhan',
+                    //       Colors.orange.shade600, () {
+                    //     Navigator.push(
+                    //         context,
+                    //         MaterialPageRoute(
+                    //           builder: (_) => BlocProvider(
+                    //             create: (context) => ContactBloc(),
+                    //             child: const ContactPage(),
+                    //           ),
+                    //         ));
+                    //   }),
+                    //   _buildCompactMenuItem(Icons.help_outline, 'Bantuan & FAQ',
+                    //       'Temukan jawaban', Colors.blue.shade600, () {
+                    //     Navigator.push(context,
+                    //         MaterialPageRoute(builder: (_) => const FaqPage()));
+                    //   }),
+                    //   _buildCompactMenuItem(
+                    //       Icons.description_outlined,
+                    //       'Syarat & Ketentuan',
+                    //       'Kebijakan penggunaan',
+                    //       Colors.blueGrey.shade600, () {
+                    //     Navigator.push(
+                    //         context,
+                    //         MaterialPageRoute(
+                    //             builder: (_) => const TermsConditionPage()));
+                    //   }),
+                    //   _buildCompactMenuItem(
+                    //       Icons.shield_outlined,
+                    //       'Kebijakan Privasi',
+                    //       'Perlindungan data Anda',
+                    //       Colors.indigo.shade600, () {
+                    //     Navigator.push(
+                    //         context,
+                    //         MaterialPageRoute(
+                    //             builder: (_) => const PrivacyPolicyPage()));
+                    //   }),
+                    // ]),
+
                     // 👇 GRUP MENU 2: Bantuan & Legal 👇
                     _buildMenuGroup([
                       _buildCompactMenuItem(
                           Icons.headset_mic_outlined,
-                          'Hubungi Kami',
-                          'Kirim pesan atau keluhan',
+                          'Hubungi Pesan',
+                          'Kirim pesan atau keluhan via formulir',
                           Colors.orange.shade600, () {
                         Navigator.push(
                             context,
@@ -3006,15 +3052,45 @@ class _ProfilePageState extends State<ProfilePage> {
                               ),
                             ));
                       }),
+                      _buildCompactMenuItem(
+                          Icons.support_agent_outlined,
+                          'Layanan Pelanggan',
+                          'Informasi kontak dan jam operasional',
+                          Colors.teal.shade600, () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const CustomerCarePage()));
+                      }),
                       _buildCompactMenuItem(Icons.help_outline, 'Bantuan & FAQ',
-                          'Temukan jawaban', Colors.blue.shade600, () {
+                          'Temukan jawaban cepat', Colors.blue.shade600, () {
                         Navigator.push(context,
                             MaterialPageRoute(builder: (_) => const FaqPage()));
                       }),
                       _buildCompactMenuItem(
+                          Icons.local_shipping_outlined,
+                          'Kebijakan Pengiriman',
+                          'Estimasi waktu dan tarif',
+                          Colors.brown.shade600, () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const ShippingPolicyPage()));
+                      }),
+                      _buildCompactMenuItem(
+                          Icons.currency_exchange_outlined,
+                          'Pengembalian Dana',
+                          'Syarat dan proses pengembalian',
+                          Colors.pink.shade600, () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const RefundPolicyPage()));
+                      }),
+                      _buildCompactMenuItem(
                           Icons.description_outlined,
                           'Syarat & Ketentuan',
-                          'Kebijakan penggunaan',
+                          'Kebijakan penggunaan layanan',
                           Colors.blueGrey.shade600, () {
                         Navigator.push(
                             context,

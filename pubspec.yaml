@@ -84,14 +84,29 @@ flutter:
     - assets/images/solherbrandbook.png
     - assets/images/profile.png
 
-    - assets/icons/anteraja.png
-    - assets/icons/gojek.png
-    - assets/icons/grab.png
-    - assets/icons/jne.png
-    - assets/icons/jnt.png
-    - assets/icons/ninja.png
-    - assets/icons/paxel.png
-    - assets/icons/sicepat.png
+    - assets/icons/courier_icons/anteraja.png
+    - assets/icons/courier_icons/gojek.png
+    - assets/icons/courier_icons/grab.png
+    - assets/icons/courier_icons/jne.png
+    - assets/icons/courier_icons/jnt.png
+    - assets/icons/courier_icons/ninja.png
+    - assets/icons/courier_icons/paxel.png
+    - assets/icons/courier_icons/sicepat.png
+
+    - assets/icons/payment_icons/bca.png
+    - assets/icons/payment_icons/bni.png
+    - assets/icons/payment_icons/bri.png
+    - assets/icons/payment_icons/ovo.png
+    - assets/icons/payment_icons/shopeepay.png
+    - assets/icons/payment_icons/dana.png
+    - assets/icons/payment_icons/linkaja.png
+    - assets/icons/payment_icons/alfamart.png
+    - assets/icons/payment_icons/indomaret.png
+    - assets/icons/payment_icons/qris.png
+    - assets/icons/payment_icons/permata.png
+    - assets/icons/payment_icons/bsi.png
+    - assets/icons/payment_icons/mandiri.png
+    - assets/icons/payment_icons/jne.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

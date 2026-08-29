@@ -5559,9 +5559,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:solher_mobile/blocs/chat/chat_bloc.dart';
 
 import 'package:solher_mobile/models/category_model.dart';
 import 'package:solher_mobile/models/product_model.dart';
+import 'package:solher_mobile/screens/chat_list_page.dart';
 import 'package:solher_mobile/screens/product_detail_page.dart';
 import 'package:solher_mobile/screens/cart_page.dart';
 import 'package:solher_mobile/screens/product_search_page.dart'; // 👇 IMPORT HALAMAN PENCARIAN
@@ -5787,6 +5789,35 @@ class _HomePageState extends State<HomePage> {
               ],
             ),
           ),
+        ),
+        // 👇 TAMBAHKAN FLOATING ACTION BUTTON INI 👇
+        floatingActionButton: FloatingActionButton(
+          backgroundColor: Colors.black,
+          foregroundColor: Colors.white,
+          elevation: 4,
+          child: const Icon(Icons.chat_bubble_outline),
+          onPressed: () {
+            final authState = context.read<AuthBloc>().state;
+            if (authState is AuthAuthenticated) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => BlocProvider(
+                    create: (context) => ChatBloc(),
+                    child: const ChatListPage(),
+                  ),
+                ),
+              );
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content:
+                      Text("Silakan login untuk menghubungi layanan pelanggan"),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          },
         ),
       ),
     );
