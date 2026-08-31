@@ -2068,6 +2068,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:solher_mobile/models/transaction_models.dart';
+import 'package:solher_mobile/screens/tracking_page.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../blocs/order/order_bloc.dart';
 import '../blocs/order/order_event.dart';
@@ -2797,6 +2798,24 @@ class _OrderPageState extends State<OrderPage> {
       );
     }
 
+    // if (['processing', 'completed', 'shipping_failed'].contains(order.status) &&
+    //     ['biteship', 'dhl'].contains(order.shippingMethod)) {
+    //   actions.add(
+    //     Expanded(
+    //       child: ElevatedButton(
+    //         style: ElevatedButton.styleFrom(
+    //             backgroundColor: Colors.black, foregroundColor: Colors.white),
+    //         onPressed: () {
+    //           ScaffoldMessenger.of(context).showSnackBar(
+    //               const SnackBar(content: Text('Membuka lacak resi...')));
+    //         },
+    //         child: const Text('TRACK ORDER',
+    //             style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+    //       ),
+    //     ),
+    //   );
+    // }
+
     if (['processing', 'completed', 'shipping_failed'].contains(order.status) &&
         ['biteship', 'dhl'].contains(order.shippingMethod)) {
       actions.add(
@@ -2805,8 +2824,14 @@ class _OrderPageState extends State<OrderPage> {
             style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.black, foregroundColor: Colors.white),
             onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Membuka lacak resi...')));
+              // 👇 PERBAIKAN: Arahkan ke TrackingPage
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => TrackingPage(
+                      orderId: order.id!), // Pastikan menggunakan ID pesanan
+                ),
+              );
             },
             child: const Text('TRACK ORDER',
                 style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),

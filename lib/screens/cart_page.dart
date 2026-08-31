@@ -1801,9 +1801,13 @@ class _CartPageState extends State<CartPage> {
                         if (item.product == null)
                           return const SizedBox.shrink();
 
+                        // bool hasDiscount =
+                        //     item.product!.discountPrice != null &&
+                        //         item.product!.discountPrice! > 0;
+
                         bool hasDiscount =
-                            item.product!.discountPrice != null &&
-                                item.product!.discountPrice! > 0;
+                            // product.discountPrice != null && product.discountPrice! > 0;
+                            item.product!.hasActiveDiscount;
                         num activePrice = hasDiscount
                             ? item.product!.discountPrice!
                             : item.product!.price;

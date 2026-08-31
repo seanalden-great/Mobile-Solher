@@ -242,7 +242,8 @@ class _ProductSearchPageState extends State<ProductSearchPage> {
 
   Widget _buildProductCard(BuildContext context, ProductModel product) {
     bool hasDiscount =
-        product.discountPrice != null && product.discountPrice! > 0;
+        // product.discountPrice != null && product.discountPrice! > 0;
+        product.hasActiveDiscount;
     final currencyFormat =
         NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
 

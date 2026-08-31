@@ -146,4 +146,16 @@ class ProductModel {
     }
     return price;
   }
+
+  bool get hasActiveDiscount {
+    if (discountPrice != null && 
+        discountPrice! > 0 && 
+        discountStartDate != null && 
+        discountEndDate != null) {
+      final now = DateTime.now();
+      // Validasi ketat: Apakah waktu saat ini berada di dalam rentang diskon?
+      return now.isAfter(discountStartDate!) && now.isBefore(discountEndDate!);
+    }
+    return false;
+  }
 }

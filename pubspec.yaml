@@ -108,6 +108,8 @@ flutter:
     - assets/icons/payment_icons/mandiri.png
     - assets/icons/payment_icons/jne.png
 
+    - assets/icons/wa_icon.png
+
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 

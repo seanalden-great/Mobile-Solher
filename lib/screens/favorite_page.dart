@@ -121,7 +121,8 @@ class _FavoritePageState extends State<FavoritePage> {
     final currencyFormatter =
         NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
     bool hasDiscount =
-        product.discountPrice != null && product.discountPrice! > 0;
+        // product.discountPrice != null && product.discountPrice! > 0;
+        product.hasActiveDiscount;
 
     return GestureDetector(
       onTap: () {
