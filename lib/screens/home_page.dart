@@ -10040,6 +10040,7 @@ import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // 👇 IMPORT SHAREDPREFERENCES
 import 'package:solher_mobile/blocs/chat/chat_bloc.dart';
+import 'package:solher_mobile/repositories/chat_repository.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:solher_mobile/models/category_model.dart';
@@ -10296,7 +10297,9 @@ class _HomePageState extends State<HomePage> {
                     context,
                     MaterialPageRoute(
                       builder: (_) => BlocProvider(
-                        create: (context) => ChatBloc(),
+                        create: (context) => ChatBloc(
+                          chatRepository: ChatRepository(),
+                        ),
                         child: const ChatListPage(),
                       ),
                     ),

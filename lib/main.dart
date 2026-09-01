@@ -103,14 +103,20 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 // 👇 [BARU] Import HydratedBloc dan PathProvider
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:solher_mobile/blocs/affiliate/affiliate_bloc.dart';
 
 // Import BLoC dan Repository
 import 'package:solher_mobile/blocs/auth/auth_bloc.dart';
 import 'package:solher_mobile/blocs/auth/auth_event.dart';
 import 'package:solher_mobile/blocs/cart/cart_bloc.dart';
+import 'package:solher_mobile/blocs/chat/chat_bloc.dart';
+import 'package:solher_mobile/blocs/contact/contact_bloc.dart';
 import 'package:solher_mobile/blocs/order/order_bloc.dart';
+import 'package:solher_mobile/repositories/affiliate_repository.dart';
 import 'package:solher_mobile/repositories/auth_repository.dart';
 import 'package:solher_mobile/repositories/cart_repository.dart';
+import 'package:solher_mobile/repositories/chat_repository.dart';
+import 'package:solher_mobile/repositories/contact_repository.dart';
 import 'package:solher_mobile/repositories/order_repository.dart';
 
 // Import layar utama
@@ -154,7 +160,22 @@ class SolherApp extends StatelessWidget {
         BlocProvider<CartBloc>(
             create: (context) => CartBloc(
                   cartRepository: CartRepository(),
-                ))
+                )),
+        BlocProvider(
+          create: (context) => ContactBloc(
+            contactRepository: ContactRepository(),
+          ),
+        ),
+        BlocProvider(
+          create: (context) => AffiliateBloc(
+            affiliateRepository: AffiliateRepository(),
+          ),
+        ),
+        BlocProvider(
+          create: (context) => ChatBloc(
+            chatRepository: ChatRepository(),
+          ),
+        )
       ],
       child: MaterialApp(
         title: 'Solher',

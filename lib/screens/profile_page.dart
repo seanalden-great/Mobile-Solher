@@ -2532,6 +2532,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:solher_mobile/blocs/affiliate/affiliate_bloc.dart';
 import 'package:solher_mobile/blocs/contact/contact_bloc.dart';
+import 'package:solher_mobile/repositories/affiliate_repository.dart';
+import 'package:solher_mobile/repositories/contact_repository.dart';
 import 'package:solher_mobile/screens/about_us_page.dart';
 import 'package:solher_mobile/screens/contact_page.dart';
 import 'package:solher_mobile/screens/solher_club_page.dart';
@@ -2985,7 +2987,9 @@ class _ProfilePageState extends State<ProfilePage> {
                             context,
                             MaterialPageRoute(
                               builder: (_) => BlocProvider(
-                                create: (context) => AffiliateBloc(),
+                                create: (context) => AffiliateBloc(
+                                  affiliateRepository: AffiliateRepository(),
+                                ),
                                 child: const AffiliateDashboardPage(),
                               ),
                             ));
@@ -3048,7 +3052,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             context,
                             MaterialPageRoute(
                               builder: (_) => BlocProvider(
-                                create: (context) => ContactBloc(),
+                                create: (context) => ContactBloc(contactRepository: ContactRepository()),
                                 child: const ContactPage(),
                               ),
                             ));
