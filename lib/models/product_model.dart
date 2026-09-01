@@ -133,6 +133,43 @@ class ProductModel {
     );
   }
 
+  // 👇 [BARU] FUNGSI UNTUK MENYIMPAN KE CACHE LOKAL (OFFLINE FIRST) 👇
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'category_id': categoryId,
+      'bag_category_id': bagCategoryId,
+      'code': code,
+      'slug': slug,
+      'name': name,
+      'image': image,
+      'variant_images': variantImages,
+      'variant_video': variantVideo,
+      'price': price,
+      'discount_price': discountPrice,
+      'discount_start_date': discountStartDate?.toIso8601String(),
+      'discount_end_date': discountEndDate?.toIso8601String(),
+      'stock': stock,
+      'weight': weight,
+      'length': length,
+      'width': width,
+      'height': height,
+      'material': material,
+      'color': color,
+      'strap_length': strapLength,
+      'description': description,
+      'description_en': descriptionEn,
+      'design': design,
+      'design_en': designEn,
+      'status': status,
+      'is_final_sale': isFinalSale,
+      'total_sold': totalSold,
+      'category': category,
+      'bag_category': bagCategory,
+      'stocks': stocks,
+    };
+  }
+
   // FUNGSI PINTAR (HELPER) UNTUK TAMPILAN UI
   // Otomatis menentukan apakah produk sedang diskon hari ini berdasarkan tanggal
   num get currentPrice {

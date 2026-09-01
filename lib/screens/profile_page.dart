@@ -2534,6 +2534,7 @@ import 'package:solher_mobile/blocs/affiliate/affiliate_bloc.dart';
 import 'package:solher_mobile/blocs/contact/contact_bloc.dart';
 import 'package:solher_mobile/screens/about_us_page.dart';
 import 'package:solher_mobile/screens/contact_page.dart';
+import 'package:solher_mobile/screens/solher_club_page.dart';
 import 'package:solher_mobile/screens/terms_condition_page.dart';
 import 'package:solher_mobile/screens/privacy_policy_page.dart';
 import 'package:solher_mobile/screens/affiliate_dashboard.dart';
@@ -3106,6 +3107,16 @@ class _ProfilePageState extends State<ProfilePage> {
                             context,
                             MaterialPageRoute(
                                 builder: (_) => const PrivacyPolicyPage()));
+                      }),
+                      _buildCompactMenuItem(
+                          Icons.people,
+                          'Solher Club',
+                          'Kebijakan Poin',
+                          Colors.indigo.shade600, () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const SolherClubPage()));
                       }),
                     ]),
 

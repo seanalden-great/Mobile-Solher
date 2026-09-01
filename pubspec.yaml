@@ -44,6 +44,12 @@ dependencies:
   url_launcher: ^6.3.1
   image_picker: ^1.1.2
   webview_flutter: ^4.8.0
+  share_plus: ^7.1.0 # Atau versi terbaru yang tersedia
+  hydrated_bloc: ^9.1.5
+  path_provider: ^2.1.5
+  awesome_notifications: ^0.12.1
+  pusher_channels_flutter: ^2.2.1
+  workmanager: ^0.7.0
 
 dev_dependencies:
   flutter_test:
@@ -80,6 +86,7 @@ flutter:
 
   assets:
     - assets/images/first_banner.png
+    - assets/images/solher_club.jpg
     - assets/images/second_banner.png
     - assets/images/solherbrandbook.png
     - assets/images/profile.png

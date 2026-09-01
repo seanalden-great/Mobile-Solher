@@ -2064,12 +2064,956 @@
 //   }
 // }
 
+// import 'package:flutter/material.dart';
+// import 'package:flutter_bloc/flutter_bloc.dart';
+// import 'package:intl/intl.dart';
+// import 'package:solher_mobile/models/transaction_models.dart';
+// import 'package:solher_mobile/screens/tracking_page.dart';
+// import 'package:url_launcher/url_launcher.dart';
+// import '../blocs/order/order_bloc.dart';
+// import '../blocs/order/order_event.dart';
+// import '../blocs/order/order_state.dart';
+// import '../repositories/order_repository.dart';
+
+// class OrderPage extends StatefulWidget {
+//   const OrderPage({super.key});
+
+//   @override
+//   State<OrderPage> createState() => _OrderPageState();
+// }
+
+// class _OrderPageState extends State<OrderPage> {
+//   String _activeTab = 'all';
+//   String _searchQuery = '';
+//   final TextEditingController _searchCtrl = TextEditingController();
+
+//   final List<Map<String, String>> _tabs = [
+//     {'label': 'All Orders', 'value': 'all'},
+//     {'label': 'Unpaid', 'value': 'unpaid'},
+//     {'label': 'To Ship', 'value': 'to_ship'},
+//     {'label': 'In Transit', 'value': 'shipping'},
+//     {'label': 'Completed', 'value': 'completed'},
+//     {'label': 'Cancelled', 'value': 'cancelled'},
+//     {'label': 'Issues / Returns', 'value': 'issues'},
+//   ];
+
+//   @override
+//   void dispose() {
+//     _searchCtrl.dispose();
+//     super.dispose();
+//   }
+
+//   // 👇 FUNGSI PENDETEKSI LOGO PEMBAYARAN 👇
+//   String? _getPaymentLogo(String? method) {
+//     if (method == null) return null;
+//     final normalized = method.toLowerCase().replaceAll(' ', '');
+
+//     if (normalized.contains('bca')) return 'assets/icons/payment_icons/bca.png';
+//     if (normalized.contains('bni')) return 'assets/icons/payment_icons/bni.png';
+//     if (normalized.contains('bri')) return 'assets/icons/payment_icons/bri.png';
+//     if (normalized.contains('mandiri'))
+//       return 'assets/icons/payment_icons/mandiri.png';
+//     if (normalized.contains('permata'))
+//       return 'assets/icons/payment_icons/permata.png';
+//     if (normalized.contains('bsi')) return 'assets/icons/payment_icons/bsi.png';
+//     if (normalized.contains('ovo')) return 'assets/icons/payment_icons/ovo.png';
+//     if (normalized.contains('shopeepay'))
+//       return 'assets/icons/payment_icons/shopeepay.png';
+//     if (normalized.contains('dana'))
+//       return 'assets/icons/payment_icons/dana.png';
+//     if (normalized.contains('linkaja'))
+//       return 'assets/icons/payment_icons/linkaja.png';
+//     if (normalized.contains('alfamart'))
+//       return 'assets/icons/payment_icons/alfamart.png';
+//     if (normalized.contains('indomaret'))
+//       return 'assets/icons/payment_icons/indomaret.png';
+//     if (normalized.contains('qris'))
+//       return 'assets/icons/payment_icons/qris.png';
+
+//     return null;
+//   }
+
+//   // 👇 FUNGSI PENDETEKSI LOGO KURIR 👇
+//   String? _getCourierLogo(String? courier) {
+//     if (courier == null) return null;
+//     final normalized = courier.toLowerCase().replaceAll(' ', '');
+
+//     if (normalized.contains('anteraja'))
+//       return 'assets/icons/courier_icons/anteraja.png';
+//     if (normalized.contains('gojek') || normalized.contains('gosend'))
+//       return 'assets/icons/courier_icons/gojek.png';
+//     if (normalized.contains('grab'))
+//       return 'assets/icons/courier_icons/grab.png';
+//     if (normalized.contains('jne')) return 'assets/icons/courier_icons/jne.png';
+//     if (normalized.contains('jnt') || normalized.contains('j&t'))
+//       return 'assets/icons/courier_icons/jnt.png';
+//     if (normalized.contains('ninja'))
+//       return 'assets/icons/courier_icons/ninja.png';
+//     if (normalized.contains('paxel'))
+//       return 'assets/icons/courier_icons/paxel.png';
+//     if (normalized.contains('sicepat'))
+//       return 'assets/icons/courier_icons/sicepat.png';
+
+//     return null;
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return BlocProvider(
+//       create: (context) =>
+//           OrderBloc(orderRepository: OrderRepository())..add(FetchOrders()),
+//       child: Scaffold(
+//         backgroundColor: const Color(0xFFFAFAFA),
+//         appBar: AppBar(
+//           title: const Text('Orders',
+//               style: TextStyle(
+//                   fontWeight: FontWeight.w900,
+//                   fontFamily: 'serif',
+//                   letterSpacing: 1)),
+//           backgroundColor: Colors.grey[500],
+//           foregroundColor: Colors.white,
+//           elevation: 2,
+//           centerTitle: true,
+//         ),
+//         body: Column(
+//           children: [
+//             _buildSearchBar(),
+//             Expanded(
+//               child: BlocConsumer<OrderBloc, OrderState>(
+//                 listener: (context, state) {
+//                   if (state is OrderActionSuccess) {
+//                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+//                         content: Text(state.message),
+//                         backgroundColor: Colors.green));
+//                   } else if (state is OrderError) {
+//                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+//                         content: Text(state.message),
+//                         backgroundColor: Colors.red));
+//                   }
+//                 },
+//                 builder: (context, state) {
+//                   if (state is OrderLoading) {
+//                     return const Center(
+//                         child: CircularProgressIndicator(color: Colors.black));
+//                   } else if (state is OrderLoaded) {
+//                     return Column(
+//                       children: [
+//                         _buildTabs(state.orders),
+//                         Expanded(child: _buildOrderList(state.orders)),
+//                       ],
+//                     );
+//                   }
+//                   return const SizedBox.shrink();
+//                 },
+//               ),
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+
+//   Widget _buildSearchBar() {
+//     return Container(
+//       color: Colors.white,
+//       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+//       child: TextField(
+//         controller: _searchCtrl,
+//         onChanged: (val) => setState(() => _searchQuery = val),
+//         decoration: InputDecoration(
+//           hintText: 'Search Order ID, Courier, Method...',
+//           hintStyle: const TextStyle(fontSize: 14, color: Colors.grey),
+//           prefixIcon: const Icon(Icons.search, color: Colors.grey),
+//           filled: true,
+//           fillColor: Colors.grey.shade50,
+//           contentPadding: const EdgeInsets.symmetric(vertical: 0),
+//           border: OutlineInputBorder(
+//               borderRadius: BorderRadius.circular(12),
+//               borderSide: BorderSide(color: Colors.grey.shade200)),
+//           enabledBorder: OutlineInputBorder(
+//               borderRadius: BorderRadius.circular(12),
+//               borderSide: BorderSide(color: Colors.grey.shade200)),
+//           focusedBorder: OutlineInputBorder(
+//               borderRadius: BorderRadius.circular(12),
+//               borderSide: const BorderSide(color: Colors.black)),
+//         ),
+//       ),
+//     );
+//   }
+
+//   Widget _buildTabs(List<TransactionModel> orders) {
+//     return Container(
+//       width: double.infinity,
+//       color: Colors.white,
+//       padding: const EdgeInsets.only(bottom: 12),
+//       child: SingleChildScrollView(
+//         scrollDirection: Axis.horizontal,
+//         physics: const BouncingScrollPhysics(),
+//         padding: const EdgeInsets.symmetric(horizontal: 16),
+//         child: Row(
+//           children: _tabs.map((tab) {
+//             final isSelected = _activeTab == tab['value'];
+//             final count =
+//                 _filterOrders(orders, overrideTab: tab['value']).length;
+
+//             return Padding(
+//               padding: const EdgeInsets.only(right: 8),
+//               child: ChoiceChip(
+//                 label: Row(
+//                   mainAxisSize: MainAxisSize.min,
+//                   children: [
+//                     Text(tab['label']!,
+//                         style: TextStyle(
+//                             fontSize: 11,
+//                             fontWeight: FontWeight.bold,
+//                             letterSpacing: 1,
+//                             color: isSelected
+//                                 ? Colors.white
+//                                 : Colors.grey.shade600)),
+//                     if (count > 0) ...[
+//                       const SizedBox(width: 6),
+//                       Container(
+//                         padding: const EdgeInsets.symmetric(
+//                             horizontal: 6, vertical: 2),
+//                         decoration: BoxDecoration(
+//                             color: isSelected
+//                                 ? Colors.white24
+//                                 : Colors.grey.shade300,
+//                             borderRadius: BorderRadius.circular(10)),
+//                         child: Text('$count',
+//                             style: TextStyle(
+//                                 fontSize: 9,
+//                                 fontWeight: FontWeight.w900,
+//                                 color:
+//                                     isSelected ? Colors.white : Colors.black)),
+//                       ),
+//                     ]
+//                   ],
+//                 ),
+//                 selected: isSelected,
+//                 onSelected: (_) => setState(() => _activeTab = tab['value']!),
+//                 selectedColor: Colors.black,
+//                 backgroundColor: Colors.transparent,
+//                 shape: RoundedRectangleBorder(
+//                     borderRadius: BorderRadius.circular(20),
+//                     side: BorderSide(
+//                         color:
+//                             isSelected ? Colors.black : Colors.grey.shade300)),
+//               ),
+//             );
+//           }).toList(),
+//         ),
+//       ),
+//     );
+//   }
+
+//   List<TransactionModel> _filterOrders(List<TransactionModel> orders,
+//       {String? overrideTab}) {
+//     final tabToUse = overrideTab ?? _activeTab;
+//     final query = _searchQuery.toLowerCase();
+
+//     return orders.where((order) {
+//       bool matchSearch = true;
+//       if (query.isNotEmpty) {
+//         matchSearch = order.orderId.toLowerCase().contains(query) ||
+//             order.paymentMethod?.toLowerCase().contains(query) == true ||
+//             order.courierCompany?.toLowerCase().contains(query) == true ||
+//             order.trackingNumber?.toLowerCase().contains(query) == true;
+//       }
+
+//       bool matchTab = false;
+//       final status = order.status.toLowerCase();
+//       final shipStatus = order.shippingStatus?.toLowerCase() ?? 'pending';
+
+//       if (tabToUse == 'all') {
+//         matchTab = true;
+//       } else if (tabToUse == 'unpaid') {
+//         matchTab = status == 'pending';
+//       } else if (tabToUse == 'to_ship') {
+//         matchTab = status == 'processing' &&
+//             [
+//               'pending',
+//               'placed',
+//               'confirmed',
+//               'allocated',
+//               'picking_up',
+//               'picked'
+//             ].contains(shipStatus);
+//       } else if (tabToUse == 'shipping') {
+//         matchTab = shipStatus == 'dropping_off';
+//       } else if (tabToUse == 'completed') {
+//         matchTab = status == 'completed' || shipStatus == 'delivered';
+//       } else if (tabToUse == 'cancelled') {
+//         matchTab = status == 'cancelled';
+//       } else if (tabToUse == 'issues') {
+//         matchTab = status.contains('refund') ||
+//             ['returned', 'shipping_failed'].contains(status) ||
+//             [
+//               'on_hold',
+//               'return_in_transit',
+//               'rejected',
+//               'disposed',
+//               'courier_not_found'
+//             ].contains(shipStatus);
+//       }
+
+//       return matchSearch && matchTab;
+//     }).toList();
+//   }
+
+//   Widget _buildOrderList(List<TransactionModel> allOrders) {
+//     final filtered = _filterOrders(allOrders);
+
+//     if (filtered.isEmpty) {
+//       return const Center(
+//           child: Text('Tidak ada pesanan ditemukan.',
+//               style:
+//                   TextStyle(color: Colors.grey, fontStyle: FontStyle.italic)));
+//     }
+
+//     return ListView.separated(
+//       physics: const BouncingScrollPhysics(),
+//       padding: const EdgeInsets.all(16),
+//       itemCount: filtered.length,
+//       separatorBuilder: (_, __) => const SizedBox(height: 16),
+//       itemBuilder: (context, index) {
+//         return _buildOrderCard(context, filtered[index]);
+//       },
+//     );
+//   }
+
+//   Widget _buildOrderCard(BuildContext context, TransactionModel order) {
+//     final currencyFormatter =
+//         NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+//     final dateFormatter = DateFormat('dd MMM yyyy, HH:mm');
+//     final dateStr = order.createdAt.isNotEmpty
+//         ? dateFormatter
+//             .format(DateTime.tryParse(order.createdAt) ?? DateTime.now())
+//         : '-';
+
+//     // Dapatkan asset logo
+//     final paymentLogo = _getPaymentLogo(order.paymentMethod);
+//     final courierLogo = _getCourierLogo(order.courierCompany);
+
+//     return Container(
+//       decoration: BoxDecoration(
+//         color: Colors.white,
+//         borderRadius: BorderRadius.circular(16),
+//         border: Border.all(color: Colors.grey.shade200),
+//         boxShadow: [
+//           BoxShadow(
+//               color: Colors.black.withOpacity(0.02),
+//               blurRadius: 10,
+//               offset: const Offset(0, 4))
+//         ],
+//       ),
+//       child: Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           // HEADER: ORDER ID & DATE & STATUS
+//           Container(
+//             padding: const EdgeInsets.all(16),
+//             decoration: BoxDecoration(
+//                 color: Colors.grey.shade50,
+//                 borderRadius:
+//                     const BorderRadius.vertical(top: Radius.circular(16))),
+//             child: Row(
+//               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//               children: [
+//                 Expanded(
+//                   child: Column(
+//                     crossAxisAlignment: CrossAxisAlignment.start,
+//                     children: [
+//                       const Text('ORDER ID',
+//                           style: TextStyle(
+//                               fontSize: 9,
+//                               color: Colors.grey,
+//                               fontWeight: FontWeight.bold,
+//                               letterSpacing: 2)),
+//                       Text(order.orderId,
+//                           style: const TextStyle(
+//                               fontFamily: 'monospace',
+//                               fontWeight: FontWeight.w900,
+//                               fontSize: 13)),
+//                       const SizedBox(height: 8),
+//                       const Text('DATE',
+//                           style: TextStyle(
+//                               fontSize: 9,
+//                               color: Colors.grey,
+//                               fontWeight: FontWeight.bold,
+//                               letterSpacing: 2)),
+//                       Text(dateStr,
+//                           style: const TextStyle(
+//                               fontWeight: FontWeight.bold, fontSize: 11)),
+//                     ],
+//                   ),
+//                 ),
+//                 Column(
+//                   crossAxisAlignment: CrossAxisAlignment.end,
+//                   children: [
+//                     _buildStatusBadge(order.status, isShipping: false),
+//                     const SizedBox(height: 6),
+//                     if (['biteship', 'dhl'].contains(order.shippingMethod))
+//                       _buildStatusBadge(order.shippingStatus ?? 'Pending',
+//                           isShipping: true)
+//                     else if (order.shippingMethod == 'free')
+//                       Container(
+//                         padding: const EdgeInsets.symmetric(
+//                             horizontal: 10, vertical: 4),
+//                         decoration: BoxDecoration(
+//                             color: Colors.grey.shade200,
+//                             borderRadius: BorderRadius.circular(12)),
+//                         child: const Text('IN STORE',
+//                             style: TextStyle(
+//                                 fontSize: 9,
+//                                 fontWeight: FontWeight.bold,
+//                                 color: Colors.black)),
+//                       )
+//                   ],
+//                 ),
+//               ],
+//             ),
+//           ),
+
+//           // ITEMS
+//           Padding(
+//             padding: const EdgeInsets.all(16.0),
+//             child: Column(
+//               children: order.details.map((detail) {
+//                 return Padding(
+//                   padding: const EdgeInsets.only(bottom: 12.0),
+//                   child: Row(
+//                     crossAxisAlignment: CrossAxisAlignment.start,
+//                     children: [
+//                       Container(
+//                         width: 60,
+//                         height: 60,
+//                         decoration: BoxDecoration(
+//                             color: Colors.grey.shade100,
+//                             borderRadius: BorderRadius.circular(8)),
+//                         child: detail.product?.image != null
+//                             ? ClipRRect(
+//                                 borderRadius: BorderRadius.circular(8),
+//                                 child: Image.network(detail.product!.image!,
+//                                     fit: BoxFit.cover))
+//                             : const Icon(Icons.image_not_supported,
+//                                 color: Colors.grey),
+//                       ),
+//                       const SizedBox(width: 12),
+//                       Expanded(
+//                         child: Column(
+//                           crossAxisAlignment: CrossAxisAlignment.start,
+//                           children: [
+//                             Text(detail.product?.name ?? 'Unknown Product',
+//                                 style: const TextStyle(
+//                                     fontWeight: FontWeight.bold, fontSize: 12),
+//                                 maxLines: 2,
+//                                 overflow: TextOverflow.ellipsis),
+//                             if (detail.color != null)
+//                               Text('Color: ${detail.color}',
+//                                   style: const TextStyle(
+//                                       fontSize: 10, color: Colors.grey)),
+//                             const SizedBox(height: 4),
+//                             Text(
+//                                 '${detail.quantity} x ${currencyFormatter.format(detail.price)}',
+//                                 style: const TextStyle(
+//                                     fontSize: 11, color: Colors.black54)),
+//                           ],
+//                         ),
+//                       ),
+//                       Text(
+//                           currencyFormatter
+//                               .format(detail.quantity * detail.price),
+//                           style: const TextStyle(
+//                               fontWeight: FontWeight.w900, fontSize: 12)),
+//                     ],
+//                   ),
+//                 );
+//               }).toList(),
+//             ),
+//           ),
+
+//           // SUBTOTALS & INFO
+//           Container(
+//             padding: const EdgeInsets.all(16),
+//             decoration: BoxDecoration(
+//                 color: Colors.grey.shade50,
+//                 border: Border.symmetric(
+//                     horizontal: BorderSide(color: Colors.grey.shade100))),
+//             child: Column(
+//               children: [
+//                 _buildPriceRow(
+//                     'Subtotal', currencyFormatter.format(order.totalAmount)),
+//                 _buildPriceRow(
+//                     'Shipping Cost',
+//                     order.shippingCost > 0
+//                         ? currencyFormatter.format(order.shippingCost)
+//                         : 'Free'),
+//                 if (order.promoDiscount > 0)
+//                   _buildPriceRow('Promo (${order.promoCode ?? '-'})',
+//                       '- ${currencyFormatter.format(order.promoDiscount)}',
+//                       color: Colors.green),
+//                 if (order.pointsUsed > 0)
+//                   _buildPriceRow('Points Redeemed',
+//                       '- ${currencyFormatter.format(order.pointsUsed * 1000)}',
+//                       color: Colors.orange),
+//                 const Padding(
+//                   padding: EdgeInsets.symmetric(vertical: 8),
+//                   child: Divider(height: 1, color: Colors.grey),
+//                 ),
+//                 Row(
+//                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//                   children: [
+//                     const Text('FINAL AMOUNT',
+//                         style: TextStyle(
+//                             fontSize: 10,
+//                             color: Colors.black,
+//                             fontWeight: FontWeight.bold,
+//                             letterSpacing: 1)),
+//                     Text(currencyFormatter.format(order.grandTotal),
+//                         style: const TextStyle(
+//                             fontWeight: FontWeight.w900, fontSize: 16)),
+//                   ],
+//                 ),
+//                 const SizedBox(height: 16),
+
+//                 // PAYMENT & SHIPPING INFO DENGAN LOGO
+//                 Row(
+//                   crossAxisAlignment: CrossAxisAlignment.start,
+//                   children: [
+//                     Expanded(
+//                       child: Column(
+//                         crossAxisAlignment: CrossAxisAlignment.start,
+//                         children: [
+//                           const Text('PAYMENT INFO',
+//                               style: TextStyle(
+//                                   fontSize: 9,
+//                                   color: Colors.grey,
+//                                   fontWeight: FontWeight.bold,
+//                                   letterSpacing: 1)),
+//                           const SizedBox(height: 6),
+//                           Row(
+//                             children: [
+//                               if (paymentLogo != null) ...[
+//                                 Image.asset(paymentLogo, height: 18),
+//                                 const SizedBox(width: 8),
+//                               ],
+//                               Expanded(
+//                                 child: Text(
+//                                   (order.paymentMethod ?? 'Waiting Payment')
+//                                       .replaceAll('_', ' ')
+//                                       .toUpperCase(),
+//                                   style: const TextStyle(
+//                                       fontWeight: FontWeight.bold,
+//                                       fontSize: 11),
+//                                 ),
+//                               ),
+//                             ],
+//                           ),
+//                         ],
+//                       ),
+//                     ),
+//                     const SizedBox(width: 12),
+//                     Expanded(
+//                       child: Column(
+//                         crossAxisAlignment: CrossAxisAlignment.start,
+//                         children: [
+//                           const Text('SHIPPING INFO',
+//                               style: TextStyle(
+//                                   fontSize: 9,
+//                                   color: Colors.grey,
+//                                   fontWeight: FontWeight.bold,
+//                                   letterSpacing: 1)),
+//                           const SizedBox(height: 6),
+//                           if (order.shippingMethod == 'free')
+//                             const Text('NO COURIER (IN STORE)',
+//                                 style: TextStyle(
+//                                     fontWeight: FontWeight.bold, fontSize: 11))
+//                           else if (order.courierCompany != null) ...[
+//                             Row(
+//                               children: [
+//                                 if (courierLogo != null) ...[
+//                                   Image.asset(courierLogo, height: 18),
+//                                   const SizedBox(width: 8),
+//                                 ],
+//                                 Expanded(
+//                                   child: Text(
+//                                     '${order.courierCompany?.toUpperCase()} - ${order.courierType?.toUpperCase()}',
+//                                     style: const TextStyle(
+//                                         fontWeight: FontWeight.bold,
+//                                         fontSize: 11),
+//                                   ),
+//                                 ),
+//                               ],
+//                             ),
+//                             const SizedBox(height: 2),
+//                             Text(
+//                               'Resi: ${order.trackingNumber ?? 'Waiting...'}',
+//                               style: const TextStyle(
+//                                   fontSize: 10,
+//                                   color: Colors.grey,
+//                                   fontFamily: 'monospace'),
+//                             ),
+//                           ] else
+//                             const Text('Setup Shipping...',
+//                                 style: TextStyle(
+//                                     fontSize: 11,
+//                                     fontStyle: FontStyle.italic,
+//                                     color: Colors.grey))
+//                         ],
+//                       ),
+//                     )
+//                   ],
+//                 )
+//               ],
+//             ),
+//           ),
+
+//           // ACTIONS
+//           Padding(
+//             padding: const EdgeInsets.all(16.0),
+//             child: _buildActionRow(context, order),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+
+//   Widget _buildPriceRow(String label, String value,
+//       {Color color = Colors.black54}) {
+//     return Padding(
+//       padding: const EdgeInsets.only(bottom: 4),
+//       child: Row(
+//         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//         children: [
+//           Text(label, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+//           Text(value,
+//               style: TextStyle(
+//                   fontSize: 11, fontWeight: FontWeight.bold, color: color)),
+//         ],
+//       ),
+//     );
+//   }
+
+//   Widget _buildStatusBadge(String text, {required bool isShipping}) {
+//     Color bg = Colors.grey.shade100;
+//     Color fg = Colors.grey.shade600;
+//     final str = text.toLowerCase();
+
+//     if (isShipping) {
+//       if (['delivered'].contains(str)) {
+//         bg = Colors.green.shade50;
+//         fg = Colors.green;
+//       } else if ([
+//         'picking_up',
+//         'picked',
+//         'dropping_off',
+//         'allocated',
+//         'confirmed'
+//       ].contains(str)) {
+//         bg = Colors.blue.shade50;
+//         fg = Colors.blue;
+//       } else if (['cancelled', 'rejected', 'disposed'].contains(str)) {
+//         bg = Colors.red.shade50;
+//         fg = Colors.red;
+//       } else if (['on_hold', 'returned'].contains(str)) {
+//         bg = Colors.orange.shade50;
+//         fg = Colors.orange;
+//       }
+//     } else {
+//       if (str == 'pending') {
+//         bg = Colors.orange.shade50;
+//         fg = Colors.orange;
+//       } else if (str == 'processing') {
+//         bg = Colors.blue.shade50;
+//         fg = Colors.blue;
+//       } else if (str == 'completed') {
+//         bg = Colors.green.shade50;
+//         fg = Colors.green;
+//       } else if (str == 'cancelled') {
+//         bg = Colors.red.shade50;
+//         fg = Colors.red;
+//       } else if (str == 'refunded') {
+//         bg = Colors.teal.shade50;
+//         fg = Colors.teal;
+//       } else if (str.contains('refund')) {
+//         bg = Colors.purple.shade50;
+//         fg = Colors.purple;
+//       }
+//     }
+
+//     return Container(
+//       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+//       decoration: BoxDecoration(
+//           color: bg,
+//           borderRadius: BorderRadius.circular(12),
+//           border: Border.all(color: fg.withOpacity(0.2))),
+//       child: Text(text.replaceAll('_', ' ').toUpperCase(),
+//           style:
+//               TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: fg)),
+//     );
+//   }
+
+//   Widget _buildActionRow(BuildContext context, TransactionModel order) {
+//     final bloc = context.read<OrderBloc>();
+//     List<Widget> actions = [];
+
+//     if (['pending', 'processing'].contains(order.status)) {
+//       actions.add(
+//         Expanded(
+//           child: OutlinedButton(
+//             style: OutlinedButton.styleFrom(
+//                 foregroundColor: Colors.red,
+//                 side: BorderSide(color: Colors.red.shade200)),
+//             onPressed: () => _confirmAction(
+//                 context,
+//                 'Batalkan Pesanan?',
+//                 'Tindakan ini tidak dapat diurungkan.',
+//                 () => bloc.add(CancelOrderRequested(order.id))),
+//             child: const Text('CANCEL',
+//                 style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+//           ),
+//         ),
+//       );
+//       actions.add(const SizedBox(width: 8));
+//     }
+
+//     if (order.status == 'pending') {
+//       actions.add(
+//         Expanded(
+//           child: ElevatedButton(
+//             style: ElevatedButton.styleFrom(
+//                 backgroundColor: Colors.black, foregroundColor: Colors.white),
+//             onPressed: () async {
+//               if (order.payment?.checkoutUrl != null) {
+//                 final url = Uri.parse(order.payment!.checkoutUrl!);
+//                 if (await canLaunchUrl(url))
+//                   await launchUrl(url, mode: LaunchMode.externalApplication);
+//               }
+//             },
+//             child: const Text('PAY NOW',
+//                 style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+//           ),
+//         ),
+//       );
+//     }
+
+//     // if (['processing', 'completed', 'shipping_failed'].contains(order.status) &&
+//     //     ['biteship', 'dhl'].contains(order.shippingMethod)) {
+//     //   actions.add(
+//     //     Expanded(
+//     //       child: ElevatedButton(
+//     //         style: ElevatedButton.styleFrom(
+//     //             backgroundColor: Colors.black, foregroundColor: Colors.white),
+//     //         onPressed: () {
+//     //           ScaffoldMessenger.of(context).showSnackBar(
+//     //               const SnackBar(content: Text('Membuka lacak resi...')));
+//     //         },
+//     //         child: const Text('TRACK ORDER',
+//     //             style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+//     //       ),
+//     //     ),
+//     //   );
+//     // }
+
+//     if (['processing', 'completed', 'shipping_failed'].contains(order.status) &&
+//         ['biteship', 'dhl'].contains(order.shippingMethod)) {
+//       actions.add(
+//         Expanded(
+//           child: ElevatedButton(
+//             style: ElevatedButton.styleFrom(
+//                 backgroundColor: Colors.black, foregroundColor: Colors.white),
+//             onPressed: () {
+//               // 👇 PERBAIKAN: Arahkan ke TrackingPage
+//               Navigator.push(
+//                 context,
+//                 MaterialPageRoute(
+//                   builder: (_) => TrackingPage(
+//                       orderId: order.id!), // Pastikan menggunakan ID pesanan
+//                 ),
+//               );
+//             },
+//             child: const Text('TRACK ORDER',
+//                 style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+//           ),
+//         ),
+//       );
+//     }
+
+//     bool canRefund =
+//         ['completed', 'shipping_failed', 'returned'].contains(order.status);
+//     if (canRefund && ['biteship', 'dhl'].contains(order.shippingMethod)) {
+//       final shipStatus = order.shippingStatus?.toLowerCase() ?? '';
+//       if (['picked', 'dropping_off', 'delivered', 'return_in_transit']
+//           .contains(shipStatus)) {
+//         canRefund = false;
+//       }
+//     }
+
+//     if (canRefund) {
+//       if (actions.isNotEmpty) actions.add(const SizedBox(width: 8));
+//       actions.add(
+//         Expanded(
+//           child: OutlinedButton(
+//             style: OutlinedButton.styleFrom(
+//                 foregroundColor: Colors.grey.shade700,
+//                 side: BorderSide(color: Colors.grey.shade300)),
+//             onPressed: () => _showRefundDialog(context, order.id),
+//             child: const Text('REQUEST REFUND',
+//                 style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+//           ),
+//         ),
+//       );
+//     }
+
+//     if (order.status == 'refund_requested') {
+//       actions.add(const Expanded(
+//           child: Text('Waiting for Admin Approval...',
+//               textAlign: TextAlign.center,
+//               style: TextStyle(
+//                   fontSize: 11,
+//                   fontStyle: FontStyle.italic,
+//                   color: Colors.orange))));
+//     } else if (order.status == 'refund_manual_required') {
+//       actions.add(const Expanded(
+//           child: Text('Manual Refund Required. Contact CS.',
+//               textAlign: TextAlign.center,
+//               style: TextStyle(
+//                   fontSize: 11,
+//                   fontStyle: FontStyle.italic,
+//                   color: Colors.pink))));
+//     } else if (order.status == 'refund_rejected') {
+//       actions.add(const Expanded(
+//           child: Text('Refund Rejected.',
+//               textAlign: TextAlign.center,
+//               style: TextStyle(
+//                   fontSize: 11,
+//                   fontStyle: FontStyle.italic,
+//                   color: Colors.red))));
+//     } else if (order.status == 'refund_approved') {
+//       actions.add(
+//         Expanded(
+//           child: ElevatedButton(
+//             style: ElevatedButton.styleFrom(
+//                 backgroundColor: Colors.blue, foregroundColor: Colors.white),
+//             onPressed: () => bloc.add(ProcessRefundRequested(order.id)),
+//             child: const Text('REFUND NOW',
+//                 style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+//           ),
+//         ),
+//       );
+//     }
+
+//     if (actions.isEmpty) return const SizedBox.shrink();
+//     return Row(children: actions);
+//   }
+
+//   void _confirmAction(BuildContext context, String title, String content,
+//       VoidCallback onConfirm) {
+//     showDialog(
+//       context: context,
+//       builder: (ctx) => AlertDialog(
+//         title: Text(title,
+//             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+//         content: Text(content, style: const TextStyle(fontSize: 14)),
+//         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+//         actions: [
+//           TextButton(
+//               onPressed: () => Navigator.pop(ctx),
+//               child: const Text('BATAL', style: TextStyle(color: Colors.grey))),
+//           ElevatedButton(
+//             style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
+//             onPressed: () {
+//               Navigator.pop(ctx);
+//               onConfirm();
+//             },
+//             child: const Text('YA, LANJUTKAN',
+//                 style: TextStyle(color: Colors.white)),
+//           )
+//         ],
+//       ),
+//     );
+//   }
+
+//   void _showRefundDialog(BuildContext context, int transactionId) {
+//     final reasonCtrl = TextEditingController();
+
+//     showDialog(
+//       context: context,
+//       builder: (ctx) => AlertDialog(
+//         title: const Text('Request Refund',
+//             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+//         content: Column(
+//           mainAxisSize: MainAxisSize.min,
+//           crossAxisAlignment: CrossAxisAlignment.start,
+//           children: [
+//             const Text('Alasan Pengembalian:',
+//                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+//             const SizedBox(height: 8),
+//             TextField(
+//               controller: reasonCtrl,
+//               maxLines: 3,
+//               decoration: InputDecoration(
+//                 filled: true,
+//                 fillColor: Colors.grey.shade100,
+//                 hintText: 'Jelaskan alasan Anda...',
+//                 border: OutlineInputBorder(
+//                     borderRadius: BorderRadius.circular(8),
+//                     borderSide: BorderSide.none),
+//               ),
+//             ),
+//             const SizedBox(height: 16),
+//             const Text('Bukti Foto/Video:',
+//                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+//             const SizedBox(height: 8),
+//             Container(
+//               width: double.infinity,
+//               padding: const EdgeInsets.all(12),
+//               decoration: BoxDecoration(
+//                   border: Border.all(
+//                       color: Colors.grey.shade300, style: BorderStyle.solid),
+//                   borderRadius: BorderRadius.circular(8)),
+//               child: const Text(
+//                   'Ketuk untuk memilih file (Butuh implementasi ImagePicker)',
+//                   style: TextStyle(fontSize: 10, color: Colors.grey),
+//                   textAlign: TextAlign.center),
+//             )
+//           ],
+//         ),
+//         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+//         actions: [
+//           TextButton(
+//               onPressed: () => Navigator.pop(ctx),
+//               child: const Text('BATAL', style: TextStyle(color: Colors.grey))),
+//           ElevatedButton(
+//             style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
+//             onPressed: () {
+//               if (reasonCtrl.text.isEmpty) return;
+//               Navigator.pop(ctx);
+//               context.read<OrderBloc>().add(RequestRefundRequested(
+//                   transactionId: transactionId,
+//                   reason: reasonCtrl.text,
+//                   filePath: '/dummy/path/file.jpg'));
+//             },
+//             child: const Text('KIRIM', style: TextStyle(color: Colors.white)),
+//           )
+//         ],
+//       ),
+//     );
+//   }
+// }
+
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:solher_mobile/models/transaction_models.dart';
 import 'package:solher_mobile/screens/tracking_page.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:dio/dio.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../blocs/order/order_bloc.dart';
 import '../blocs/order/order_event.dart';
 import '../blocs/order/order_state.dart';
@@ -2103,7 +3047,7 @@ class _OrderPageState extends State<OrderPage> {
     super.dispose();
   }
 
-  // 👇 FUNGSI PENDETEKSI LOGO PEMBAYARAN 👇
+  // FUNGSI PENDETEKSI LOGO PEMBAYARAN
   String? _getPaymentLogo(String? method) {
     if (method == null) return null;
     final normalized = method.toLowerCase().replaceAll(' ', '');
@@ -2133,7 +3077,7 @@ class _OrderPageState extends State<OrderPage> {
     return null;
   }
 
-  // 👇 FUNGSI PENDETEKSI LOGO KURIR 👇
+  // FUNGSI PENDETEKSI LOGO KURIR
   String? _getCourierLogo(String? courier) {
     if (courier == null) return null;
     final normalized = courier.toLowerCase().replaceAll(' ', '');
@@ -2391,7 +3335,6 @@ class _OrderPageState extends State<OrderPage> {
             .format(DateTime.tryParse(order.createdAt) ?? DateTime.now())
         : '-';
 
-    // Dapatkan asset logo
     final paymentLogo = _getPaymentLogo(order.paymentMethod);
     final courierLogo = _getCourierLogo(order.courierCompany);
 
@@ -2410,7 +3353,6 @@ class _OrderPageState extends State<OrderPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // HEADER: ORDER ID & DATE & STATUS
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -2474,8 +3416,6 @@ class _OrderPageState extends State<OrderPage> {
               ],
             ),
           ),
-
-          // ITEMS
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
@@ -2521,19 +3461,47 @@ class _OrderPageState extends State<OrderPage> {
                           ],
                         ),
                       ),
-                      Text(
-                          currencyFormatter
-                              .format(detail.quantity * detail.price),
-                          style: const TextStyle(
-                              fontWeight: FontWeight.w900, fontSize: 12)),
+                      // 👇 PERBAIKAN: Menambahkan tombol Review berdampingan dengan Harga 👇
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                              currencyFormatter.format(
+                                  (detail.quantity ?? 1) * (detail.price ?? 0)),
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.w900, fontSize: 12)),
+                          if (order.status == 'completed') ...[
+                            const SizedBox(height: 8),
+                            InkWell(
+                              onTap: () => _showWriteReviewDialog(
+                                  context,
+                                  order.id,
+                                  detail.product?.id ?? 0,
+                                  detail.product?.name ?? 'Product'),
+                              borderRadius: BorderRadius.circular(8),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: Colors.black,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Text('WRITE REVIEW',
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.bold)),
+                              ),
+                            )
+                          ]
+                        ],
+                      ),
                     ],
                   ),
                 );
               }).toList(),
             ),
           ),
-
-          // SUBTOTALS & INFO
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -2576,8 +3544,6 @@ class _OrderPageState extends State<OrderPage> {
                   ],
                 ),
                 const SizedBox(height: 16),
-
-                // PAYMENT & SHIPPING INFO DENGAN LOGO
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -2668,8 +3634,6 @@ class _OrderPageState extends State<OrderPage> {
               ],
             ),
           ),
-
-          // ACTIONS
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: _buildActionRow(context, order),
@@ -2798,24 +3762,6 @@ class _OrderPageState extends State<OrderPage> {
       );
     }
 
-    // if (['processing', 'completed', 'shipping_failed'].contains(order.status) &&
-    //     ['biteship', 'dhl'].contains(order.shippingMethod)) {
-    //   actions.add(
-    //     Expanded(
-    //       child: ElevatedButton(
-    //         style: ElevatedButton.styleFrom(
-    //             backgroundColor: Colors.black, foregroundColor: Colors.white),
-    //         onPressed: () {
-    //           ScaffoldMessenger.of(context).showSnackBar(
-    //               const SnackBar(content: Text('Membuka lacak resi...')));
-    //         },
-    //         child: const Text('TRACK ORDER',
-    //             style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-    //       ),
-    //     ),
-    //   );
-    // }
-
     if (['processing', 'completed', 'shipping_failed'].contains(order.status) &&
         ['biteship', 'dhl'].contains(order.shippingMethod)) {
       actions.add(
@@ -2824,12 +3770,10 @@ class _OrderPageState extends State<OrderPage> {
             style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.black, foregroundColor: Colors.white),
             onPressed: () {
-              // 👇 PERBAIKAN: Arahkan ke TrackingPage
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => TrackingPage(
-                      orderId: order.id!), // Pastikan menggunakan ID pesanan
+                  builder: (_) => TrackingPage(orderId: order.id!),
                 ),
               );
             },
@@ -2932,6 +3876,195 @@ class _OrderPageState extends State<OrderPage> {
           )
         ],
       ),
+    );
+  }
+
+  // 👇 SISTEM REVIEW BARU (MODAL DAN KIRIM KE BACKEND VIA DIO) 👇
+  void _showWriteReviewDialog(BuildContext context, int transactionId,
+      int productId, String productName) {
+    int rating = 5;
+    final commentCtrl = TextEditingController();
+    XFile? selectedImage;
+    bool isSubmitting = false;
+    final ImagePicker picker = ImagePicker();
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => StatefulBuilder(builder: (context, setStateDialog) {
+        Future<void> pickImage() async {
+          final picked = await picker.pickImage(
+              source: ImageSource.gallery, imageQuality: 70);
+          if (picked != null) {
+            setStateDialog(() => selectedImage = picked);
+          }
+        }
+
+        Future<void> submitReview() async {
+          if (commentCtrl.text.trim().isEmpty) {
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                content: Text('Ulasan tidak boleh kosong!'),
+                backgroundColor: Colors.red));
+            return;
+          }
+
+          setStateDialog(() => isSubmitting = true);
+
+          try {
+            final prefs = await SharedPreferences.getInstance();
+            final token = prefs.getString('token');
+            final dio = Dio(
+                BaseOptions(baseUrl: 'https://back.solher.co.id/api', headers: {
+              'Authorization': 'Bearer $token',
+              'Accept': 'application/json',
+            }));
+
+            final formData = FormData.fromMap({
+              'transaction_id': transactionId,
+              'product_id': productId,
+              'rating': rating,
+              'comment': commentCtrl.text.trim(),
+            });
+
+            if (selectedImage != null) {
+              formData.files.add(MapEntry(
+                'images[]',
+                await MultipartFile.fromFile(selectedImage!.path,
+                    filename: selectedImage!.name),
+              ));
+            }
+
+            final response = await dio.post('/reviews', data: formData);
+
+            if (response.statusCode == 200 || response.statusCode == 201) {
+              if (context.mounted) {
+                Navigator.pop(ctx);
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                    content: Text('Terima kasih! Ulasan berhasil dikirim.'),
+                    backgroundColor: Colors.green));
+              }
+            }
+          } catch (e) {
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                  content: Text('Gagal mengirim ulasan.'),
+                  backgroundColor: Colors.red));
+            }
+          } finally {
+            if (mounted) setStateDialog(() => isSubmitting = false);
+          }
+        }
+
+        return AlertDialog(
+          title: const Text('Write a Review',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(productName,
+                    style: const TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey,
+                        fontWeight: FontWeight.w600)),
+                const SizedBox(height: 16),
+
+                // Rating Stars
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(5, (index) {
+                    return IconButton(
+                      icon: Icon(
+                        index < rating ? Icons.star : Icons.star_border,
+                        color: Colors.amber,
+                        size: 32,
+                      ),
+                      onPressed: () => setStateDialog(() => rating = index + 1),
+                    );
+                  }),
+                ),
+                const SizedBox(height: 16),
+
+                // Comment TextField
+                TextField(
+                  controller: commentCtrl,
+                  maxLines: 4,
+                  decoration: InputDecoration(
+                    hintText: 'Share your experience with this product...',
+                    hintStyle: const TextStyle(fontSize: 12),
+                    filled: true,
+                    fillColor: Colors.grey.shade50,
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Image Picker
+                GestureDetector(
+                  onTap: pickImage,
+                  child: Container(
+                    width: double.infinity,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade100,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                          color: Colors.grey.shade300,
+                          style: BorderStyle.solid),
+                    ),
+                    child: selectedImage != null
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Image.file(File(selectedImage!.path),
+                                fit: BoxFit.cover),
+                          )
+                        : const Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.add_a_photo,
+                                  color: Colors.grey, size: 28),
+                              SizedBox(height: 8),
+                              Text('Tap to add photo',
+                                  style: TextStyle(
+                                      fontSize: 11, color: Colors.grey)),
+                            ],
+                          ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          actions: [
+            TextButton(
+              onPressed: isSubmitting ? null : () => Navigator.pop(ctx),
+              child: const Text('CANCEL',
+                  style: TextStyle(
+                      color: Colors.grey, fontWeight: FontWeight.bold)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.black,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8))),
+              onPressed: isSubmitting ? null : submitReview,
+              child: isSubmitting
+                  ? const SizedBox(
+                      height: 16,
+                      width: 16,
+                      child: CircularProgressIndicator(
+                          color: Colors.white, strokeWidth: 2))
+                  : const Text('SUBMIT',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
+            )
+          ],
+        );
+      }),
     );
   }
 
