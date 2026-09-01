@@ -4775,16 +4775,16 @@ class _PaymentPageState extends State<PaymentPage> {
     // Normalisasi string: ubah ke huruf kecil dan hapus spasi
     final normalized = company.toLowerCase().replaceAll(' ', '');
 
-    if (normalized.contains('anteraja')) return 'assets/icons/anteraja.png';
+    if (normalized.contains('anteraja')) return 'assets/courier_icons/anteraja.png';
     if (normalized.contains('gojek') || normalized.contains('gosend'))
-      return 'assets/icons/gojek.png';
-    if (normalized.contains('grab')) return 'assets/icons/grab.png';
-    if (normalized.contains('jne')) return 'assets/icons/jne.png';
+      return 'assets/courier_icons/gojek.png';
+    if (normalized.contains('grab')) return 'assets/courier_icons/grab.png';
+    if (normalized.contains('jne')) return 'assets/courier_icons/jne.png';
     if (normalized.contains('jnt') || normalized.contains('j&t'))
-      return 'assets/icons/jnt.png';
-    if (normalized.contains('ninja')) return 'assets/icons/ninja.png';
-    if (normalized.contains('paxel')) return 'assets/icons/paxel.png';
-    if (normalized.contains('sicepat')) return 'assets/icons/sicepat.png';
+      return 'assets/courier_icons/jnt.png';
+    if (normalized.contains('ninja')) return 'assets/courier_icons/ninja.png';
+    if (normalized.contains('paxel')) return 'assets/courier_icons/paxel.png';
+    if (normalized.contains('sicepat')) return 'assets/courier_icons/sicepat.png';
 
     return null; // Mengembalikan null jika kurir tidak dikenali
   }
