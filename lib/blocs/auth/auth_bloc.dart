@@ -12,7 +12,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   AuthBloc({required this.authRepository}) : super(AuthInitial()) {
 
-    // 👇 [BARU] LOGIKA PENGECEKAN SESI SAAT APP DIBUKA 👇
     on<CheckLoginStatusEvent>((event, emit) async {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
@@ -20,12 +19,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
       if (token != null && userJsonString != null) {
         try {
-          // Parse string JSON kembali menjadi UserModel
           final userMap = json.decode(userJsonString);
           final user = UserModel.fromJson(userMap);
           emit(AuthAuthenticated(user));
         } catch (e) {
-          // Jika terjadi error saat parsing, paksa logout
           await prefs.remove('token');
           await prefs.remove('user_data');
           emit(AuthUnauthenticated());
@@ -35,34 +32,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       }
     });
     
-    // LOGIKA LOGIN
-    // on<LoginRequested>((event, emit) async {
-    //   emit(AuthLoading());
-    //   try {
-    //     final result = await authRepository.login(event.email, event.password, event.captchaToken);
-        
-    //     // Simpan Token JWT ke Local Storage Android/iOS
-    //     final prefs = await SharedPreferences.getInstance();
-    //     await prefs.setString('token', result['token']);
-        
-    //     emit(AuthAuthenticated(result['user']));
-    //   } catch (e) {
-    //     emit(AuthError(e.toString().replaceAll('Exception: ', '')));
-    //   }
-    // });
-
     // LOGIKA LOGIN (PERBAIKAN)
     on<LoginRequested>((event, emit) async {
       emit(AuthLoading());
       try {
         final result = await authRepository.login(
-            event.email, event.password, event.captchaToken);
+            event.email, event.password, event.appSecret); // 👈 Gunakan appSecret
 
-        // Simpan Token JWT dan Data User ke Local Storage Android/iOS
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('token', result['token']);
-
-        // 👇 TAMBAHKAN BARIS INI 👇
         await prefs.setString('user_data', result['user_json']);
 
         emit(AuthAuthenticated(result['user']));
@@ -120,7 +98,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(AuthLoading());
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('token');
-      await prefs.remove('user_data'); // 👇 [BARU] Hapus data user juga
+      await prefs.remove('user_data');
       emit(AuthUnauthenticated());
     });
 
@@ -132,7 +110,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             event.firstName, event.lastName, event.email, event.phone);
         emit(AuthActionSuccess(
             result['message'] ?? 'Profil berhasil diperbarui.'));
-        emit(AuthAuthenticated(result['user'])); // Segarkan UI dengan data baru
+        emit(AuthAuthenticated(result['user']));
       } catch (e) {
         emit(AuthError(e.toString().replaceAll('Exception: ', '')));
       }
@@ -145,7 +123,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         final result = await authRepository.updateProfileImage(event.filePath);
         emit(AuthActionSuccess(
             result['message'] ?? 'Foto profil berhasil diperbarui.'));
-        emit(AuthAuthenticated(result['user'])); // Segarkan UI dengan data baru
+        emit(AuthAuthenticated(result['user']));
       } catch (e) {
         emit(AuthError(e.toString().replaceAll('Exception: ', '')));
       }

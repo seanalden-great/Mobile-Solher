@@ -185,6 +185,26 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
+  // void _handleLogin() {
+  //   final email = _emailController.text.trim();
+  //   final password = _passwordController.text.trim();
+
+  //   if (email.isEmpty || password.isEmpty) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(
+  //           content: Text('Email dan Password wajib diisi'),
+  //           backgroundColor: Colors.red),
+  //     );
+  //     return;
+  //   }
+
+  //   context.read<AuthBloc>().add(LoginRequested(
+  //         email: email,
+  //         password: password,
+  //         captchaToken: 'mobile_solher_rahasia_123!@#',
+  //       ));
+  // }
+
   void _handleLogin() {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
@@ -198,10 +218,13 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
 
+    // Pastikan di dalam AuthBloc Anda mengubah endpoint API yang ditembak
+    // menjadi: /api/mobile/login
     context.read<AuthBloc>().add(LoginRequested(
           email: email,
           password: password,
-          captchaToken: 'mobile_solher_rahasia_123!@#',
+          // 👇 Ganti dari captchaToken menjadi appSecret 👇
+          appSecret: 'SOLHER_MOBILE_SECRET_2026_XYZ!',
         ));
   }
 

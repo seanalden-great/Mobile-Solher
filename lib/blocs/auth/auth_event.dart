@@ -3,8 +3,9 @@ abstract class AuthEvent {}
 class LoginRequested extends AuthEvent {
   final String email;
   final String password;
-  final String captchaToken; // Sesuai requirement backend
-  LoginRequested({required this.email, required this.password, required this.captchaToken});
+  final String appSecret; // 👈 Berubah dari captchaToken
+  LoginRequested(
+      {required this.email, required this.password, required this.appSecret});
 }
 
 class RegisterRequested extends AuthEvent {
@@ -12,7 +13,11 @@ class RegisterRequested extends AuthEvent {
   final String lastName;
   final String email;
   final String password;
-  RegisterRequested({required this.firstName, required this.lastName, required this.email, required this.password});
+  RegisterRequested(
+      {required this.firstName,
+      required this.lastName,
+      required this.email,
+      required this.password});
 }
 
 class SendResetCodeRequested extends AuthEvent {
@@ -31,7 +36,11 @@ class ResetPasswordRequested extends AuthEvent {
   final String code;
   final String password;
   final String confirmPassword;
-  ResetPasswordRequested({required this.email, required this.code, required this.password, required this.confirmPassword});
+  ResetPasswordRequested(
+      {required this.email,
+      required this.code,
+      required this.password,
+      required this.confirmPassword});
 }
 
 class LogoutRequested extends AuthEvent {}
