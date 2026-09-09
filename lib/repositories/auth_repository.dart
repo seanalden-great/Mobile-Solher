@@ -282,4 +282,33 @@ class AuthRepository {
       throw Exception(_extractErrorMessage(e));
     }
   }
+
+  Future<void> syncFcmToken(String fcmToken) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+      if (token == null) return;
+
+      await _dio.post(
+        '$baseUrl/user/fcm-token',
+        data: {'fcm_token': fcmToken},
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+    } catch (e) {
+      // Abaikan error background
+    }
+  }
+
+  Future<void> removeFcmToken() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+      if (token == null) return;
+
+      await _dio.post(
+        '$baseUrl/user/remove-fcm-token',
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+    } catch (e) {}
+  }
 }

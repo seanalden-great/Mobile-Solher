@@ -103,6 +103,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 // 👇 [BARU] Import HydratedBloc dan PathProvider
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:solher_mobile/blocs/affiliate/affiliate_bloc.dart';
 
 // Import BLoC dan Repository
@@ -123,25 +125,123 @@ import 'package:solher_mobile/repositories/order_repository.dart';
 import 'package:solher_mobile/screens/main_navigation.dart';
 import 'package:solher_mobile/utils/notification_controller.dart';
 
-// 👇 PERBAIKAN: Ubah main() menjadi async 👇
-void main() async {
-  WidgetsFlutterBinding
-      .ensureInitialized(); // Wajib ada untuk akses memori native
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp();
+  if (message.notification != null) {
+    NotificationController.showNewMessageNotification(
+      adminId: 999,
+      adminName: message.notification!.title ?? 'Solher',
+      message: message.notification!.body ?? '',
+    );
+  }
+}
 
-  // Inisialisasi Storage Lokal sebelum App berjalan
+// 👇 PERBAIKAN: Ubah main() menjadi async 👇
+// void main() async {
+//   WidgetsFlutterBinding
+//       .ensureInitialized(); // Wajib ada untuk akses memori native
+
+//   // Inisialisasi Storage Lokal sebelum App berjalan
+//   HydratedBloc.storage = await HydratedStorage.build(
+//     storageDirectory: await getApplicationDocumentsDirectory(),
+//   );
+
+//   // 👇 INISIALISASI NOTIFIKASI 👇
+//   await NotificationController.initializeLocalNotifications();
+//   await NotificationController.startListeningNotificationEvents();
+
+//   runApp(const SolherApp());
+// }
+
+// class SolherApp extends StatelessWidget {
+//   const SolherApp({super.key});
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return MultiBlocProvider(
+//       providers: [
+//         BlocProvider<AuthBloc>(
+//           create: (context) => AuthBloc(
+//             authRepository: AuthRepository(),
+//           )..add(CheckLoginStatusEvent()),
+//         ),
+//         BlocProvider<OrderBloc>(
+//           create: (context) => OrderBloc(
+//             orderRepository: OrderRepository(),
+//           ),
+//         ),
+//         BlocProvider<CartBloc>(
+//             create: (context) => CartBloc(
+//                   cartRepository: CartRepository(),
+//                 )),
+//         BlocProvider(
+//           create: (context) => ContactBloc(
+//             contactRepository: ContactRepository(),
+//           ),
+//         ),
+//         BlocProvider(
+//           create: (context) => AffiliateBloc(
+//             affiliateRepository: AffiliateRepository(),
+//           ),
+//         ),
+//         BlocProvider(
+//           create: (context) => ChatBloc(
+//             chatRepository: ChatRepository(),
+//           ),
+//         )
+//       ],
+//       child: MaterialApp(
+//         title: 'Solher',
+//         debugShowCheckedModeBanner: false,
+//         theme: ThemeData(
+//           colorScheme: ColorScheme.fromSeed(seedColor: Colors.black),
+//           useMaterial3: true,
+//         ),
+//         home: const MainNavigation(),
+//       ),
+//     );
+//   }
+// }
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp();
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  await FirebaseMessaging.instance.requestPermission();
+
   HydratedBloc.storage = await HydratedStorage.build(
     storageDirectory: await getApplicationDocumentsDirectory(),
   );
 
-  // 👇 INISIALISASI NOTIFIKASI 👇
   await NotificationController.initializeLocalNotifications();
   await NotificationController.startListeningNotificationEvents();
 
   runApp(const SolherApp());
 }
 
-class SolherApp extends StatelessWidget {
+class SolherApp extends StatefulWidget {
   const SolherApp({super.key});
+
+  @override
+  State<SolherApp> createState() => _SolherAppState();
+}
+
+class _SolherAppState extends State<SolherApp> {
+  @override
+  void initState() {
+    super.initState();
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      if (message.notification != null) {
+        NotificationController.showNewMessageNotification(
+          adminId: 999,
+          adminName: message.notification!.title ?? 'Solher Update',
+          message: message.notification!.body ?? '',
+        );
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

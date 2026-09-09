@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:solher_mobile/models/user_model.dart';
@@ -21,6 +22,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         try {
           final userMap = json.decode(userJsonString);
           final user = UserModel.fromJson(userMap);
+          final fcmToken = await FirebaseMessaging.instance.getToken();
+          if (fcmToken != null) await authRepository.syncFcmToken(fcmToken);
           emit(AuthAuthenticated(user));
         } catch (e) {
           await prefs.remove('token');
@@ -33,17 +36,39 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     });
     
     // LOGIKA LOGIN (PERBAIKAN)
+    // on<LoginRequested>((event, emit) async {
+    //   emit(AuthLoading());
+    //   try {
+    //     final result = await authRepository.login(
+    //         event.email, event.password, event.appSecret); // 👈 Gunakan appSecret
+
+    //     final prefs = await SharedPreferences.getInstance();
+    //     await prefs.setString('token', result['token']);
+    //     await prefs.setString('user_data', result['user_json']);
+
+    //     emit(AuthAuthenticated(result['user']));
+    //   } catch (e) {
+    //     emit(AuthError(e.toString().replaceAll('Exception: ', '')));
+    //   }
+    // });
+
     on<LoginRequested>((event, emit) async {
       emit(AuthLoading());
       try {
         final result = await authRepository.login(
-            event.email, event.password, event.appSecret); // 👈 Gunakan appSecret
+            event.email, event.password, event.appSecret);
 
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('token', result['token']);
         await prefs.setString('user_data', result['user_json']);
 
         emit(AuthAuthenticated(result['user']));
+
+        // Sinkronisasi FCM Token
+        try {
+          final fcmToken = await FirebaseMessaging.instance.getToken();
+          if (fcmToken != null) await authRepository.syncFcmToken(fcmToken);
+        } catch (e) {}
       } catch (e) {
         emit(AuthError(e.toString().replaceAll('Exception: ', '')));
       }
@@ -94,8 +119,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     });
 
     // LOGIKA LOGOUT
+    // on<LogoutRequested>((event, emit) async {
+    //   emit(AuthLoading());
+    //   final prefs = await SharedPreferences.getInstance();
+    //   await prefs.remove('token');
+    //   await prefs.remove('user_data');
+    //   emit(AuthUnauthenticated());
+    // });
+
     on<LogoutRequested>((event, emit) async {
       emit(AuthLoading());
+      await authRepository.removeFcmToken(); // Hapus token sebelum logout
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('token');
       await prefs.remove('user_data');

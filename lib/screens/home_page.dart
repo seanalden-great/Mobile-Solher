@@ -15312,8 +15312,13 @@ import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:solher_mobile/blocs/chat/chat_bloc.dart';
+import 'package:solher_mobile/blocs/notif/notif_bloc.dart';
+import 'package:solher_mobile/blocs/notif/notif_event.dart';
+import 'package:solher_mobile/blocs/notif/notif_state.dart';
 import 'package:solher_mobile/repositories/chat_repository.dart';
+import 'package:solher_mobile/repositories/notif_repository.dart';
 import 'package:solher_mobile/screens/affiliate_landing_page.dart';
+import 'package:solher_mobile/screens/notification_page.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:solher_mobile/models/category_model.dart';
@@ -15541,6 +15546,10 @@ class _HomePageState extends State<HomePage> {
         BlocProvider(
           create: (context) =>
               CartBloc(cartRepository: CartRepository())..add(FetchCartEvent()),
+        ),
+        BlocProvider(
+          create: (context) => NotifBloc(notifRepository: NotifRepository())
+            ..add(FetchNotifsEvent()),
         ),
       ],
       child: Scaffold(
@@ -16036,6 +16045,64 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  // Widget _buildHeader() {
+  //   return BlocBuilder<AuthBloc, AuthState>(
+  //     builder: (context, state) {
+  //       String displayName = 'Guest';
+  //       ImageProvider avatarImage =
+  //           const AssetImage('assets/images/profile.png');
+
+  //       if (state is AuthAuthenticated) {
+  //         final user = state.user;
+  //         displayName = user.firstName;
+  //         if (user.profileImage != null && user.profileImage!.isNotEmpty) {
+  //           avatarImage = NetworkImage(user.profileImage!);
+  //         }
+  //       }
+
+  //       return Padding(
+  //         padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+  //         child: Row(
+  //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //           children: [
+  //             Column(
+  //               crossAxisAlignment: CrossAxisAlignment.start,
+  //               children: [
+  //                 Text(
+  //                   'Hi, $displayName',
+  //                   style: const TextStyle(
+  //                       fontSize: 26,
+  //                       fontWeight: FontWeight.w900,
+  //                       color: Colors.black87),
+  //                 ),
+  //                 const SizedBox(height: 4),
+  //                 const Text(
+  //                   'Discover your unique style',
+  //                   style: TextStyle(
+  //                       fontSize: 14,
+  //                       color: Colors.grey,
+  //                       fontWeight: FontWeight.w500),
+  //                 ),
+  //               ],
+  //             ),
+  //             Container(
+  //               decoration: BoxDecoration(
+  //                 shape: BoxShape.circle,
+  //                 border: Border.all(color: Colors.black12, width: 2),
+  //               ),
+  //               child: CircleAvatar(
+  //                 radius: 22,
+  //                 backgroundImage: avatarImage,
+  //                 backgroundColor: Colors.grey.shade200,
+  //               ),
+  //             ),
+  //           ],
+  //         ),
+  //       );
+  //     },
+  //   );
+  // }
+
   Widget _buildHeader() {
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, state) {
@@ -16076,16 +16143,84 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ],
               ),
-              Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.black12, width: 2),
-                ),
-                child: CircleAvatar(
-                  radius: 22,
-                  backgroundImage: avatarImage,
-                  backgroundColor: Colors.grey.shade200,
-                ),
+              Row(
+                children: [
+                  // 👇 ICON LONCENG DIPINDAH KE SINI 👇
+                  BlocBuilder<NotifBloc, NotifState>(
+                    builder: (context, notifState) {
+                      int unreadCount = 0;
+                      if (notifState is NotifLoaded) {
+                        unreadCount = notifState.unreadCount;
+                      }
+
+                      return Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.notifications_none_outlined,
+                                size: 28),
+                            onPressed: () {
+                              if (state is AuthAuthenticated) {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => BlocProvider.value(
+                                      value: context.read<NotifBloc>(),
+                                      child: const NotificationPage(),
+                                    ),
+                                  ),
+                                ).then((_) {
+                                  context
+                                      .read<NotifBloc>()
+                                      .add(FetchNotifsEvent());
+                                });
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text(
+                                          "Silakan login untuk melihat notifikasi"),
+                                      backgroundColor: Colors.red),
+                                );
+                              }
+                            },
+                          ),
+                          if (unreadCount > 0)
+                            Positioned(
+                              right: 8,
+                              top: 8,
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: const BoxDecoration(
+                                  color: Colors.red,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Text(
+                                  '$unreadCount',
+                                  style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            )
+                        ],
+                      );
+                    },
+                  ),
+                  const SizedBox(width: 8),
+                  // 👇 FOTO PROFIL 👇
+                  Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.black12, width: 2),
+                    ),
+                    child: CircleAvatar(
+                      radius: 22,
+                      backgroundImage: avatarImage,
+                      backgroundColor: Colors.grey.shade200,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1022955881154",
+    "project_id": "solher-app",
+    "storage_bucket": "solher-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1022955881154:android:f6508083922b54df8c315b",
+        "android_client_info": {
+          "package_name": "com.example.solher_mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDADm8RZ68FOQgX0Xaf_dGJMR1i8smpCro"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -50,6 +50,8 @@ dependencies:
   awesome_notifications: ^0.12.1
   pusher_channels_flutter: ^2.2.1
   workmanager: ^0.7.0
+  firebase_core: ^4.7.0
+  firebase_messaging: ^16.2.0
 
 dev_dependencies:
   flutter_test:
