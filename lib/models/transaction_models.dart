@@ -116,19 +116,48 @@ class TransactionDetailModel {
   }
 }
 
+// class PaymentModel {
+//   final int id;
+//   final String externalId;
+//   final String? checkoutUrl;
+//   final num amount;
+//   final String status;
+
+//   PaymentModel(
+//       {required this.id,
+//       required this.externalId,
+//       this.checkoutUrl,
+//       required this.amount,
+//       required this.status});
+
+//   factory PaymentModel.fromJson(Map<String, dynamic> json) {
+//     return PaymentModel(
+//       id: json['id'] ?? 0,
+//       externalId: json['external_id'] ?? '',
+//       checkoutUrl: json['checkout_url'],
+//       amount: num.tryParse(json['amount']?.toString() ?? '0') ?? 0,
+//       status: json['status'] ?? '',
+//     );
+//   }
+// }
+
 class PaymentModel {
   final int id;
   final String externalId;
   final String? checkoutUrl;
   final num amount;
   final String status;
+  // 👇 PERBAIKAN: Tambahkan variabel createdAt 👇
+  final String? createdAt;
 
-  PaymentModel(
-      {required this.id,
-      required this.externalId,
-      this.checkoutUrl,
-      required this.amount,
-      required this.status});
+  PaymentModel({
+    required this.id,
+    required this.externalId,
+    this.checkoutUrl,
+    required this.amount,
+    required this.status,
+    this.createdAt, // <-- Daftarkan di constructor
+  });
 
   factory PaymentModel.fromJson(Map<String, dynamic> json) {
     return PaymentModel(
@@ -137,6 +166,8 @@ class PaymentModel {
       checkoutUrl: json['checkout_url'],
       amount: num.tryParse(json['amount']?.toString() ?? '0') ?? 0,
       status: json['status'] ?? '',
+      // 👇 Parsing data tanggalnya dari JSON Backend 👇
+      createdAt: json['created_at']?.toString(),
     );
   }
 }
