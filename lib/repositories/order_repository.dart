@@ -56,14 +56,59 @@ class OrderRepository {
   }
 
   // 1. Fetch All Orders
-  Future<List<TransactionModel>> fetchOrders() async {
+  // Future<List<TransactionModel>> fetchOrders() async {
+  //   try {
+  //     final token = await _getToken();
+  //     final response = await _dio.get(
+  //       '$baseUrl/transactions',
+  //       options: Options(headers: {'Authorization': 'Bearer $token'}),
+  //     );
+  //     final data = response.data as List;
+  //     return data.map((e) => TransactionModel.fromJson(e)).toList();
+  //   } catch (e) {
+  //     throw Exception('Gagal mengambil riwayat pesanan.');
+  //   }
+  // }
+
+  // 1. Fetch All Orders
+  // Future<List<TransactionModel>> fetchOrders() async {
+  //   try {
+  //     final token = await _getToken();
+  //     final response = await _dio.get(
+  //       '$baseUrl/transactions',
+  //       options: Options(headers: {'Authorization': 'Bearer $token'}),
+  //     );
+
+  //     // 👇 PERBAIKAN: Gunakan fallback agar mendukung format Paginasi maupun Array biasa 👇
+  //     final responseData = response.data;
+  //     final List data =
+  //         responseData is List ? responseData : responseData['data'];
+
+  //     return data.map((e) => TransactionModel.fromJson(e)).toList();
+  //   } catch (e) {
+  //     throw Exception('Gagal mengambil riwayat pesanan.');
+  //   }
+  // }
+
+  // 1. Fetch All Orders (Dengan Paginasi & Filter)
+  Future<List<TransactionModel>> fetchOrders(
+      {int page = 1, String tab = 'all', String search = ''}) async {
     try {
       final token = await _getToken();
       final response = await _dio.get(
         '$baseUrl/transactions',
+        queryParameters: {
+          'page': page,
+          'tab': tab,
+          'search': search,
+        },
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
-      final data = response.data as List;
+
+      final responseData = response.data;
+      final List data =
+          responseData is List ? responseData : responseData['data'];
+
       return data.map((e) => TransactionModel.fromJson(e)).toList();
     } catch (e) {
       throw Exception('Gagal mengambil riwayat pesanan.');

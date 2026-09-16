@@ -1,6 +1,21 @@
 abstract class OrderEvent {}
 
-class FetchOrders extends OrderEvent {}
+// class FetchOrders extends OrderEvent {}
+
+class FetchOrders extends OrderEvent {
+  final bool isRefresh;
+  final String? tab;
+  final String? search;
+
+  FetchOrders({
+    this.isRefresh = false,
+    this.tab,
+    this.search,
+  });
+
+  @override
+  List<Object?> get props => [isRefresh, tab, search];
+}
 
 class FetchOrderDetailRequested extends OrderEvent {
   final int transactionId;

@@ -6,9 +6,36 @@ class OrderInitial extends OrderState {}
 
 class OrderLoading extends OrderState {}
 
+// class OrderLoaded extends OrderState {
+//   final List<TransactionModel> orders;
+//   OrderLoaded(this.orders);
+// }
+
 class OrderLoaded extends OrderState {
   final List<TransactionModel> orders;
-  OrderLoaded(this.orders);
+  final bool hasReachedMax;
+  final int currentPage;
+
+  OrderLoaded({
+    required this.orders,
+    this.hasReachedMax = false,
+    this.currentPage = 1,
+  });
+
+  OrderLoaded copyWith({
+    List<TransactionModel>? orders,
+    bool? hasReachedMax,
+    int? currentPage,
+  }) {
+    return OrderLoaded(
+      orders: orders ?? this.orders,
+      hasReachedMax: hasReachedMax ?? this.hasReachedMax,
+      currentPage: currentPage ?? this.currentPage,
+    );
+  }
+
+  @override
+  List<Object?> get props => [orders, hasReachedMax, currentPage];
 }
 
 class OrderDetailLoaded extends OrderState {
