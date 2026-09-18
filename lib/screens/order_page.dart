@@ -5404,6 +5404,1172 @@
 //   }
 // }
 
+// import 'dart:io';
+// import 'dart:async';
+// import 'package:flutter/material.dart';
+// import 'package:flutter_bloc/flutter_bloc.dart';
+// import 'package:intl/intl.dart';
+// import 'package:solher_mobile/models/transaction_models.dart';
+// import 'package:solher_mobile/screens/tracking_page.dart';
+// import 'package:solher_mobile/screens/xendit_page.dart';
+// import 'package:image_picker/image_picker.dart';
+// import 'package:dio/dio.dart';
+// import 'package:shared_preferences/shared_preferences.dart';
+
+// import '../blocs/order/order_bloc.dart';
+// import '../blocs/order/order_event.dart';
+// import '../blocs/order/order_state.dart';
+// import '../repositories/order_repository.dart';
+
+// class OrderPage extends StatefulWidget {
+//   const OrderPage({super.key});
+
+//   @override
+//   State<OrderPage> createState() => _OrderPageState();
+// }
+
+// class _OrderPageState extends State<OrderPage> {
+//   String _activeTab = 'all';
+//   final TextEditingController _searchCtrl = TextEditingController();
+
+//   // 👇 SCROLL CONTROLLER UNTUK INFINITE SCROLLING 👇
+//   final ScrollController _scrollController = ScrollController();
+
+//   Timer? _countdownTimer;
+//   Map<int, String> countdowns = {};
+
+//   final List<Map<String, String>> _tabs = [
+//     {'label': 'All Orders', 'value': 'all'},
+//     {'label': 'Unpaid', 'value': 'unpaid'},
+//     {'label': 'To Ship', 'value': 'to_ship'},
+//     {'label': 'In Transit', 'value': 'shipping'},
+//     {'label': 'Completed', 'value': 'completed'},
+//     {'label': 'Cancelled', 'value': 'cancelled'},
+//     {'label': 'Issues / Returns', 'value': 'issues'},
+//   ];
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     // Mendeteksi ketika user men-scroll hingga bagian paling bawah
+//     _scrollController.addListener(() {
+//       if (_scrollController.position.pixels >=
+//           _scrollController.position.maxScrollExtent - 200) {
+//         final state = context.read<OrderBloc>().state;
+//         if (state is OrderLoaded && !state.hasReachedMax) {
+//           context.read<OrderBloc>().add(FetchOrders(isRefresh: false));
+//         }
+//       }
+//     });
+//   }
+
+//   @override
+//   void dispose() {
+//     _countdownTimer?.cancel();
+//     _searchCtrl.dispose();
+//     _scrollController.dispose();
+//     super.dispose();
+//   }
+
+//   String _calculateTimeLeft(String? referenceDate) {
+//     if (referenceDate == null || referenceDate.isEmpty) return 'Expired';
+//     try {
+//       final refDate = DateTime.parse(referenceDate).toLocal();
+//       final expiryDate = refDate.add(const Duration(hours: 24));
+//       final now = DateTime.now();
+//       final diff = expiryDate.difference(now);
+
+//       if (diff.isNegative) return 'Expired';
+
+//       final hours = diff.inHours.toString().padLeft(2, '0');
+//       final minutes = (diff.inMinutes % 60).toString().padLeft(2, '0');
+//       final seconds = (diff.inSeconds % 60).toString().padLeft(2, '0');
+
+//       return '$hours:$minutes:$seconds';
+//     } catch (e) {
+//       return 'Expired';
+//     }
+//   }
+
+//   void _startTimers(List<TransactionModel> orders) {
+//     _countdownTimer?.cancel();
+//     _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+//       bool hasChanges = false;
+//       for (var order in orders) {
+//         if (order.status == 'pending') {
+//           final timeRef = (order.payment?.createdAt != null &&
+//                   order.payment!.createdAt!.isNotEmpty)
+//               ? order.payment!.createdAt
+//               : order.createdAt;
+
+//           final timeLeft = _calculateTimeLeft(timeRef);
+
+//           if (countdowns[order.id!] != timeLeft) {
+//             countdowns[order.id!] = timeLeft;
+//             hasChanges = true;
+//           }
+//         }
+//       }
+
+//       if (hasChanges && mounted) {
+//         setState(() {});
+//       }
+//     });
+//   }
+
+//   String? _getPaymentLogo(String? method) {
+//     if (method == null) return null;
+//     final normalized = method.toLowerCase().replaceAll(' ', '');
+//     if (normalized.contains('bca')) return 'assets/icons/payment_icons/bca.png';
+//     if (normalized.contains('bni')) return 'assets/icons/payment_icons/bni.png';
+//     if (normalized.contains('bri')) return 'assets/icons/payment_icons/bri.png';
+//     if (normalized.contains('mandiri'))
+//       return 'assets/icons/payment_icons/mandiri.png';
+//     if (normalized.contains('permata'))
+//       return 'assets/icons/payment_icons/permata.png';
+//     if (normalized.contains('bsi')) return 'assets/icons/payment_icons/bsi.png';
+//     if (normalized.contains('ovo')) return 'assets/icons/payment_icons/ovo.png';
+//     if (normalized.contains('shopeepay'))
+//       return 'assets/icons/payment_icons/shopeepay.png';
+//     if (normalized.contains('dana'))
+//       return 'assets/icons/payment_icons/dana.png';
+//     if (normalized.contains('linkaja'))
+//       return 'assets/icons/payment_icons/linkaja.png';
+//     if (normalized.contains('alfamart'))
+//       return 'assets/icons/payment_icons/alfamart.png';
+//     if (normalized.contains('indomaret'))
+//       return 'assets/icons/payment_icons/indomaret.png';
+//     if (normalized.contains('qris'))
+//       return 'assets/icons/payment_icons/qris.png';
+//     return null;
+//   }
+
+//   String? _getCourierLogo(String? courier) {
+//     if (courier == null) return null;
+//     final normalized = courier.toLowerCase().replaceAll(' ', '');
+//     if (normalized.contains('anteraja'))
+//       return 'assets/icons/courier_icons/anteraja.png';
+//     if (normalized.contains('gojek') || normalized.contains('gosend'))
+//       return 'assets/icons/courier_icons/gojek.png';
+//     if (normalized.contains('grab'))
+//       return 'assets/icons/courier_icons/grab.png';
+//     if (normalized.contains('jne')) return 'assets/icons/courier_icons/jne.png';
+//     if (normalized.contains('jnt') || normalized.contains('j&t'))
+//       return 'assets/icons/courier_icons/jnt.png';
+//     if (normalized.contains('ninja'))
+//       return 'assets/icons/courier_icons/ninja.png';
+//     if (normalized.contains('paxel'))
+//       return 'assets/icons/courier_icons/paxel.png';
+//     if (normalized.contains('sicepat'))
+//       return 'assets/icons/courier_icons/sicepat.png';
+//     return null;
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return BlocProvider(
+//       create: (context) => OrderBloc(orderRepository: OrderRepository())
+//         ..add(FetchOrders(isRefresh: true)),
+//       child: Scaffold(
+//         backgroundColor: const Color(0xFFFAFAFA),
+//         appBar: AppBar(
+//           title: const Text('Orders',
+//               style: TextStyle(
+//                   fontWeight: FontWeight.w900,
+//                   fontFamily: 'serif',
+//                   letterSpacing: 1)),
+//           backgroundColor: Colors.grey[500],
+//           foregroundColor: Colors.white,
+//           elevation: 2,
+//           centerTitle: true,
+//         ),
+//         body: Builder(builder: (context) {
+//           return Column(
+//             children: [
+//               _buildSearchBar(context),
+//               Expanded(
+//                 child: BlocConsumer<OrderBloc, OrderState>(
+//                   listener: (context, state) {
+//                     if (state is OrderLoaded) {
+//                       _startTimers(state.orders);
+//                     } else if (state is OrderActionSuccess) {
+//                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+//                           content: Text(state.message),
+//                           backgroundColor: Colors.green));
+//                     } else if (state is OrderError) {
+//                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+//                           content: Text(state.message),
+//                           backgroundColor: Colors.red));
+//                     }
+//                   },
+//                   builder: (context, state) {
+//                     if (state is OrderLoading) {
+//                       return const Center(
+//                           child:
+//                               CircularProgressIndicator(color: Colors.black));
+//                     } else if (state is OrderLoaded) {
+//                       return Column(
+//                         children: [
+//                           _buildTabs(context),
+//                           Expanded(child: _buildOrderList(state)),
+//                         ],
+//                       );
+//                     }
+//                     return const SizedBox.shrink();
+//                   },
+//                 ),
+//               ),
+//             ],
+//           );
+//         }),
+//       ),
+//     );
+//   }
+
+//   // 👇 PERBAIKAN: Gunakan onSubmitted agar pencarian via Backend tidak dispam 👇
+//   Widget _buildSearchBar(BuildContext context) {
+//     return Container(
+//       color: Colors.white,
+//       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+//       child: TextField(
+//         controller: _searchCtrl,
+//         onSubmitted: (val) {
+//           // Menembak data baru ke backend
+//           context
+//               .read<OrderBloc>()
+//               .add(FetchOrders(isRefresh: true, search: val, tab: _activeTab));
+//         },
+//         decoration: InputDecoration(
+//           hintText: 'Search Order ID, Courier, Method...',
+//           hintStyle: const TextStyle(fontSize: 14, color: Colors.grey),
+//           prefixIcon: const Icon(Icons.search, color: Colors.grey),
+//           filled: true,
+//           fillColor: Colors.grey.shade50,
+//           contentPadding: const EdgeInsets.symmetric(vertical: 0),
+//           border: OutlineInputBorder(
+//               borderRadius: BorderRadius.circular(12),
+//               borderSide: BorderSide(color: Colors.grey.shade200)),
+//           enabledBorder: OutlineInputBorder(
+//               borderRadius: BorderRadius.circular(12),
+//               borderSide: BorderSide(color: Colors.grey.shade200)),
+//           focusedBorder: OutlineInputBorder(
+//               borderRadius: BorderRadius.circular(12),
+//               borderSide: const BorderSide(color: Colors.black)),
+//         ),
+//       ),
+//     );
+//   }
+
+//   Widget _buildTabs(BuildContext context) {
+//     return Container(
+//       width: double.infinity,
+//       color: Colors.white,
+//       padding: const EdgeInsets.only(bottom: 12),
+//       child: SingleChildScrollView(
+//         scrollDirection: Axis.horizontal,
+//         physics: const BouncingScrollPhysics(),
+//         padding: const EdgeInsets.symmetric(horizontal: 16),
+//         child: Row(
+//           children: _tabs.map((tab) {
+//             final isSelected = _activeTab == tab['value'];
+
+//             return Padding(
+//               padding: const EdgeInsets.only(right: 8),
+//               child: ChoiceChip(
+//                 label: Text(tab['label']!,
+//                     style: TextStyle(
+//                         fontSize: 11,
+//                         fontWeight: FontWeight.bold,
+//                         letterSpacing: 1,
+//                         color:
+//                             isSelected ? Colors.white : Colors.grey.shade600)),
+//                 selected: isSelected,
+//                 onSelected: (_) {
+//                   setState(() => _activeTab = tab['value']!);
+//                   // Menembak permintaan data baru ke backend berdasarkan Tab
+//                   context.read<OrderBloc>().add(FetchOrders(
+//                       isRefresh: true,
+//                       tab: _activeTab,
+//                       search: _searchCtrl.text));
+//                 },
+//                 selectedColor: Colors.black,
+//                 backgroundColor: Colors.transparent,
+//                 shape: RoundedRectangleBorder(
+//                     borderRadius: BorderRadius.circular(20),
+//                     side: BorderSide(
+//                         color:
+//                             isSelected ? Colors.black : Colors.grey.shade300)),
+//               ),
+//             );
+//           }).toList(),
+//         ),
+//       ),
+//     );
+//   }
+
+//   // 👇 PERBAIKAN: Langsung membaca List Orders karena Filtering sudah dilakukan di Backend 👇
+//   // Widget _buildOrderList(OrderLoaded state) {
+//   //   if (state.orders.isEmpty) {
+//   //     return const Center(
+//   //         child: Text('Tidak ada pesanan ditemukan.',
+//   //             style:
+//   //                 TextStyle(color: Colors.grey, fontStyle: FontStyle.italic)));
+//   //   }
+
+//   //   return ListView.separated(
+//   //     controller: _scrollController,
+//   //     physics: const BouncingScrollPhysics(),
+//   //     padding: const EdgeInsets.all(16),
+//   //     itemCount:
+//   //         state.hasReachedMax ? state.orders.length : state.orders.length + 1,
+//   //     separatorBuilder: (_, __) => const SizedBox(height: 16),
+//   //     itemBuilder: (context, index) {
+//   //       // Tampilkan indikator loading di paling bawah jika data belum mentok
+//   //       if (index >= state.orders.length) {
+//   //         return const Center(
+//   //           child: Padding(
+//   //             padding: EdgeInsets.all(16.0),
+//   //             child: CircularProgressIndicator(
+//   //                 color: Colors.black, strokeWidth: 2),
+//   //           ),
+//   //         );
+//   //       }
+//   //       return _buildOrderCard(context, state.orders[index]);
+//   //     },
+//   //   );
+//   // }
+
+//   // 👇 PERBAIKAN: Langsung membaca List Orders dan Menyaring Ghost Order 👇
+//   Widget _buildOrderList(OrderLoaded state) {
+//     // Saring pesanan hantu (awaiting_payment) secara ketat di sini
+//     final validOrders = state.orders
+//         .where((order) => order.status.toLowerCase() != 'awaiting_payment')
+//         .toList();
+
+//     if (validOrders.isEmpty) {
+//       return const Center(
+//           child: Text('Tidak ada pesanan ditemukan.',
+//               style:
+//                   TextStyle(color: Colors.grey, fontStyle: FontStyle.italic)));
+//     }
+
+//     return ListView.separated(
+//       controller: _scrollController,
+//       physics: const BouncingScrollPhysics(),
+//       padding: const EdgeInsets.all(16),
+//       itemCount:
+//           state.hasReachedMax ? validOrders.length : validOrders.length + 1,
+//       separatorBuilder: (_, __) => const SizedBox(height: 16),
+//       itemBuilder: (context, index) {
+//         // Tampilkan indikator loading di paling bawah jika data belum mentok
+//         if (index >= validOrders.length) {
+//           return const Center(
+//             child: Padding(
+//               padding: EdgeInsets.all(16.0),
+//               child: CircularProgressIndicator(
+//                   color: Colors.black, strokeWidth: 2),
+//             ),
+//           );
+//         }
+//         return _buildOrderCard(context, validOrders[index]);
+//       },
+//     );
+//   }
+
+//   Widget _buildOrderCard(BuildContext context, TransactionModel order) {
+//     final currencyFormatter =
+//         NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+//     final dateFormatter = DateFormat('dd MMM yyyy, HH:mm');
+//     final dateStr = order.createdAt.isNotEmpty
+//         ? dateFormatter
+//             .format(DateTime.tryParse(order.createdAt) ?? DateTime.now())
+//         : '-';
+
+//     final paymentLogo = _getPaymentLogo(order.paymentMethod);
+//     final courierLogo = _getCourierLogo(order.courierCompany);
+
+//     return Container(
+//       decoration: BoxDecoration(
+//         color: Colors.white,
+//         borderRadius: BorderRadius.circular(16),
+//         border: Border.all(color: Colors.grey.shade200),
+//         boxShadow: [
+//           BoxShadow(
+//               color: Colors.black.withOpacity(0.02),
+//               blurRadius: 10,
+//               offset: const Offset(0, 4))
+//         ],
+//       ),
+//       child: Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           Container(
+//             padding: const EdgeInsets.all(16),
+//             decoration: BoxDecoration(
+//                 color: Colors.grey.shade50,
+//                 borderRadius:
+//                     const BorderRadius.vertical(top: Radius.circular(16))),
+//             child: Row(
+//               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//               children: [
+//                 Expanded(
+//                   child: Column(
+//                     crossAxisAlignment: CrossAxisAlignment.start,
+//                     children: [
+//                       const Text('ORDER ID',
+//                           style: TextStyle(
+//                               fontSize: 9,
+//                               color: Colors.grey,
+//                               fontWeight: FontWeight.bold,
+//                               letterSpacing: 2)),
+//                       Text(order.orderId,
+//                           style: const TextStyle(
+//                               fontFamily: 'monospace',
+//                               fontWeight: FontWeight.w900,
+//                               fontSize: 13)),
+//                       const SizedBox(height: 8),
+//                       const Text('DATE',
+//                           style: TextStyle(
+//                               fontSize: 9,
+//                               color: Colors.grey,
+//                               fontWeight: FontWeight.bold,
+//                               letterSpacing: 2)),
+//                       Text(dateStr,
+//                           style: const TextStyle(
+//                               fontWeight: FontWeight.bold, fontSize: 11)),
+//                     ],
+//                   ),
+//                 ),
+//                 Column(
+//                   crossAxisAlignment: CrossAxisAlignment.end,
+//                   children: [
+//                     _buildStatusBadge(order.status, isShipping: false),
+//                     const SizedBox(height: 6),
+//                     if (['biteship', 'dhl'].contains(order.shippingMethod))
+//                       _buildStatusBadge(order.shippingStatus ?? 'Pending',
+//                           isShipping: true)
+//                     else if (order.shippingMethod == 'free')
+//                       Container(
+//                         padding: const EdgeInsets.symmetric(
+//                             horizontal: 10, vertical: 4),
+//                         decoration: BoxDecoration(
+//                             color: Colors.grey.shade200,
+//                             borderRadius: BorderRadius.circular(12)),
+//                         child: const Text('IN STORE',
+//                             style: TextStyle(
+//                                 fontSize: 9,
+//                                 fontWeight: FontWeight.bold,
+//                                 color: Colors.black)),
+//                       )
+//                   ],
+//                 ),
+//               ],
+//             ),
+//           ),
+//           Padding(
+//             padding: const EdgeInsets.all(16.0),
+//             child: Column(
+//               children: order.details.map((detail) {
+//                 return Padding(
+//                   padding: const EdgeInsets.only(bottom: 12.0),
+//                   child: Row(
+//                     crossAxisAlignment: CrossAxisAlignment.start,
+//                     children: [
+//                       Container(
+//                         width: 60,
+//                         height: 60,
+//                         decoration: BoxDecoration(
+//                             color: Colors.grey.shade100,
+//                             borderRadius: BorderRadius.circular(8)),
+//                         child: detail.product?.image != null
+//                             ? ClipRRect(
+//                                 borderRadius: BorderRadius.circular(8),
+//                                 child: Image.network(detail.product!.image!,
+//                                     fit: BoxFit.cover))
+//                             : const Icon(Icons.image_not_supported,
+//                                 color: Colors.grey),
+//                       ),
+//                       const SizedBox(width: 12),
+//                       Expanded(
+//                         child: Column(
+//                           crossAxisAlignment: CrossAxisAlignment.start,
+//                           children: [
+//                             Text(detail.product?.name ?? 'Unknown Product',
+//                                 style: const TextStyle(
+//                                     fontWeight: FontWeight.bold, fontSize: 12),
+//                                 maxLines: 2,
+//                                 overflow: TextOverflow.ellipsis),
+//                             if (detail.color != null)
+//                               Text('Color: ${detail.color}',
+//                                   style: const TextStyle(
+//                                       fontSize: 10, color: Colors.grey)),
+//                             const SizedBox(height: 4),
+//                             Text(
+//                                 '${detail.quantity} x ${currencyFormatter.format(detail.price)}',
+//                                 style: const TextStyle(
+//                                     fontSize: 11, color: Colors.black54)),
+//                           ],
+//                         ),
+//                       ),
+//                       Column(
+//                         crossAxisAlignment: CrossAxisAlignment.end,
+//                         children: [
+//                           Text(
+//                               currencyFormatter.format(
+//                                   (detail.quantity ?? 1) * (detail.price ?? 0)),
+//                               style: const TextStyle(
+//                                   fontWeight: FontWeight.w900, fontSize: 12)),
+//                           if (order.status == 'completed') ...[
+//                             const SizedBox(height: 8),
+//                             InkWell(
+//                               onTap: () => _showWriteReviewDialog(
+//                                   context,
+//                                   order.id!,
+//                                   detail.product?.id ?? 0,
+//                                   detail.product?.name ?? 'Product'),
+//                               borderRadius: BorderRadius.circular(8),
+//                               child: Container(
+//                                 padding: const EdgeInsets.symmetric(
+//                                     horizontal: 10, vertical: 6),
+//                                 decoration: BoxDecoration(
+//                                     color: Colors.black,
+//                                     borderRadius: BorderRadius.circular(8)),
+//                                 child: const Text('WRITE REVIEW',
+//                                     style: TextStyle(
+//                                         color: Colors.white,
+//                                         fontSize: 9,
+//                                         fontWeight: FontWeight.bold)),
+//                               ),
+//                             )
+//                           ]
+//                         ],
+//                       ),
+//                     ],
+//                   ),
+//                 );
+//               }).toList(),
+//             ),
+//           ),
+//           Container(
+//             padding: const EdgeInsets.all(16),
+//             decoration: BoxDecoration(
+//                 color: Colors.grey.shade50,
+//                 border: Border.symmetric(
+//                     horizontal: BorderSide(color: Colors.grey.shade100))),
+//             child: Column(
+//               children: [
+//                 _buildPriceRow(
+//                     'Subtotal', currencyFormatter.format(order.totalAmount)),
+//                 _buildPriceRow(
+//                     'Shipping Cost',
+//                     order.shippingCost > 0
+//                         ? currencyFormatter.format(order.shippingCost)
+//                         : 'Free'),
+//                 if (order.promoDiscount > 0)
+//                   _buildPriceRow('Promo (${order.promoCode ?? '-'})',
+//                       '- ${currencyFormatter.format(order.promoDiscount)}',
+//                       color: Colors.green),
+//                 if (order.pointsUsed > 0)
+//                   _buildPriceRow('Points Redeemed',
+//                       '- ${currencyFormatter.format(order.pointsUsed * 1000)}',
+//                       color: Colors.orange),
+//                 const Padding(
+//                     padding: EdgeInsets.symmetric(vertical: 8),
+//                     child: Divider(height: 1, color: Colors.grey)),
+//                 Row(
+//                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//                   children: [
+//                     const Text('FINAL AMOUNT',
+//                         style: TextStyle(
+//                             fontSize: 10,
+//                             color: Colors.black,
+//                             fontWeight: FontWeight.bold,
+//                             letterSpacing: 1)),
+//                     Text(currencyFormatter.format(order.grandTotal),
+//                         style: const TextStyle(
+//                             fontWeight: FontWeight.w900, fontSize: 16)),
+//                   ],
+//                 ),
+//                 const SizedBox(height: 16),
+//                 Row(
+//                   crossAxisAlignment: CrossAxisAlignment.start,
+//                   children: [
+//                     Expanded(
+//                       child: Column(
+//                         crossAxisAlignment: CrossAxisAlignment.start,
+//                         children: [
+//                           const Text('PAYMENT INFO',
+//                               style: TextStyle(
+//                                   fontSize: 9,
+//                                   color: Colors.grey,
+//                                   fontWeight: FontWeight.bold,
+//                                   letterSpacing: 1)),
+//                           const SizedBox(height: 6),
+//                           Row(
+//                             children: [
+//                               if (paymentLogo != null) ...[
+//                                 Image.asset(paymentLogo, height: 18),
+//                                 const SizedBox(width: 8)
+//                               ],
+//                               Expanded(
+//                                 child: Text(
+//                                     (order.paymentMethod ?? 'Waiting Payment')
+//                                         .replaceAll('_', ' ')
+//                                         .toUpperCase(),
+//                                     style: const TextStyle(
+//                                         fontWeight: FontWeight.bold,
+//                                         fontSize: 11)),
+//                               ),
+//                             ],
+//                           ),
+//                         ],
+//                       ),
+//                     ),
+//                     const SizedBox(width: 12),
+//                     Expanded(
+//                       child: Column(
+//                         crossAxisAlignment: CrossAxisAlignment.start,
+//                         children: [
+//                           const Text('SHIPPING INFO',
+//                               style: TextStyle(
+//                                   fontSize: 9,
+//                                   color: Colors.grey,
+//                                   fontWeight: FontWeight.bold,
+//                                   letterSpacing: 1)),
+//                           const SizedBox(height: 6),
+//                           if (order.shippingMethod == 'free')
+//                             const Text('NO COURIER (IN STORE)',
+//                                 style: TextStyle(
+//                                     fontWeight: FontWeight.bold, fontSize: 11))
+//                           else if (order.courierCompany != null) ...[
+//                             Row(
+//                               children: [
+//                                 if (courierLogo != null) ...[
+//                                   Image.asset(courierLogo, height: 18),
+//                                   const SizedBox(width: 8)
+//                                 ],
+//                                 Expanded(
+//                                   child: Text(
+//                                       '${order.courierCompany?.toUpperCase()} - ${order.courierType?.toUpperCase()}',
+//                                       style: const TextStyle(
+//                                           fontWeight: FontWeight.bold,
+//                                           fontSize: 11)),
+//                                 ),
+//                               ],
+//                             ),
+//                             const SizedBox(height: 2),
+//                             Text(
+//                                 'Resi: ${order.trackingNumber ?? 'Waiting...'}',
+//                                 style: const TextStyle(
+//                                     fontSize: 10,
+//                                     color: Colors.grey,
+//                                     fontFamily: 'monospace')),
+//                           ] else
+//                             const Text('Setup Shipping...',
+//                                 style: TextStyle(
+//                                     fontSize: 11,
+//                                     fontStyle: FontStyle.italic,
+//                                     color: Colors.grey))
+//                         ],
+//                       ),
+//                     )
+//                   ],
+//                 )
+//               ],
+//             ),
+//           ),
+//           Padding(
+//             padding: const EdgeInsets.all(16.0),
+//             child: _buildActionRow(context, order),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+
+//   Widget _buildPriceRow(String label, String value,
+//       {Color color = Colors.black54}) {
+//     return Padding(
+//       padding: const EdgeInsets.only(bottom: 4),
+//       child: Row(
+//         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//         children: [
+//           Text(label, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+//           Text(value,
+//               style: TextStyle(
+//                   fontSize: 11, fontWeight: FontWeight.bold, color: color)),
+//         ],
+//       ),
+//     );
+//   }
+
+//   Widget _buildStatusBadge(String text, {required bool isShipping}) {
+//     Color bg = Colors.grey.shade100;
+//     Color fg = Colors.grey.shade600;
+//     final str = text.toLowerCase();
+
+//     if (isShipping) {
+//       if (['delivered'].contains(str)) {
+//         bg = Colors.green.shade50;
+//         fg = Colors.green;
+//       } else if ([
+//         'picking_up',
+//         'picked',
+//         'dropping_off',
+//         'allocated',
+//         'confirmed'
+//       ].contains(str)) {
+//         bg = Colors.blue.shade50;
+//         fg = Colors.blue;
+//       } else if (['cancelled', 'rejected', 'disposed'].contains(str)) {
+//         bg = Colors.red.shade50;
+//         fg = Colors.red;
+//       } else if (['on_hold', 'returned'].contains(str)) {
+//         bg = Colors.orange.shade50;
+//         fg = Colors.orange;
+//       }
+//     } else {
+//       if (str == 'pending') {
+//         bg = Colors.orange.shade50;
+//         fg = Colors.orange;
+//       } else if (str == 'processing') {
+//         bg = Colors.blue.shade50;
+//         fg = Colors.blue;
+//       } else if (str == 'completed') {
+//         bg = Colors.green.shade50;
+//         fg = Colors.green;
+//       } else if (str == 'cancelled') {
+//         bg = Colors.red.shade50;
+//         fg = Colors.red;
+//       } else if (str == 'refunded') {
+//         bg = Colors.teal.shade50;
+//         fg = Colors.teal;
+//       } else if (str.contains('refund')) {
+//         bg = Colors.purple.shade50;
+//         fg = Colors.purple;
+//       }
+//     }
+
+//     return Container(
+//       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+//       decoration: BoxDecoration(
+//           color: bg,
+//           borderRadius: BorderRadius.circular(12),
+//           border: Border.all(color: fg.withOpacity(0.2))),
+//       child: Text(text.replaceAll('_', ' ').toUpperCase(),
+//           style:
+//               TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: fg)),
+//     );
+//   }
+
+//   Widget _buildActionRow(BuildContext context, TransactionModel order) {
+//     final bloc = context.read<OrderBloc>();
+//     List<Widget> actions = [];
+
+//     if (['pending', 'processing'].contains(order.status)) {
+//       actions.add(
+//         Expanded(
+//           child: OutlinedButton(
+//             style: OutlinedButton.styleFrom(
+//                 foregroundColor: Colors.red,
+//                 side: BorderSide(color: Colors.red.shade200)),
+//             onPressed: () => _confirmAction(
+//                 context,
+//                 'Batalkan Pesanan?',
+//                 'Tindakan ini tidak dapat diurungkan.',
+//                 () => bloc.add(CancelOrderRequested(order.id!))),
+//             child: const Text('CANCEL',
+//                 style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+//           ),
+//         ),
+//       );
+//       actions.add(const SizedBox(width: 8));
+//     }
+
+//     if (order.status == 'pending') {
+//       final isExpired = countdowns[order.id] == 'Expired';
+
+//       actions.add(
+//         Expanded(
+//           child: ElevatedButton(
+//             style: ElevatedButton.styleFrom(
+//                 backgroundColor: isExpired ? Colors.grey : Colors.black,
+//                 foregroundColor: Colors.white),
+//             onPressed: isExpired
+//                 ? null
+//                 : () {
+//                     if (order.payment?.checkoutUrl != null) {
+//                       Navigator.push(
+//                         context,
+//                         MaterialPageRoute(
+//                             builder: (_) => XenditPage(
+//                                 checkoutUrl: order.payment!.checkoutUrl!)),
+//                       ).then((_) {
+//                         bloc.add(FetchOrders(isRefresh: true));
+//                       });
+//                     } else {
+//                       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+//                           content: Text('Link pembayaran belum tersedia.'),
+//                           backgroundColor: Colors.red));
+//                     }
+//                   },
+//             child: const Text('PAY NOW',
+//                 style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+//           ),
+//         ),
+//       );
+//     }
+
+//     if (['processing', 'completed', 'shipping_failed'].contains(order.status) &&
+//         ['biteship', 'dhl'].contains(order.shippingMethod)) {
+//       actions.add(
+//         Expanded(
+//           child: ElevatedButton(
+//             style: ElevatedButton.styleFrom(
+//                 backgroundColor: Colors.black, foregroundColor: Colors.white),
+//             onPressed: () {
+//               Navigator.push(
+//                   context,
+//                   MaterialPageRoute(
+//                       builder: (_) => TrackingPage(orderId: order.id!)));
+//             },
+//             child: const Text('TRACK ORDER',
+//                 style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+//           ),
+//         ),
+//       );
+//     }
+
+//     bool canRefund =
+//         ['completed', 'shipping_failed', 'returned'].contains(order.status);
+//     if (canRefund && ['biteship', 'dhl'].contains(order.shippingMethod)) {
+//       final shipStatus = order.shippingStatus?.toLowerCase() ?? '';
+//       if (['picked', 'dropping_off', 'delivered', 'return_in_transit']
+//           .contains(shipStatus)) {
+//         canRefund = false;
+//       }
+//     }
+
+//     if (canRefund) {
+//       if (actions.isNotEmpty) actions.add(const SizedBox(width: 8));
+//       actions.add(
+//         Expanded(
+//           child: OutlinedButton(
+//             style: OutlinedButton.styleFrom(
+//                 foregroundColor: Colors.grey.shade700,
+//                 side: BorderSide(color: Colors.grey.shade300)),
+//             onPressed: () => _showRefundDialog(context, order.id!),
+//             child: const Text('REQUEST REFUND',
+//                 style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+//           ),
+//         ),
+//       );
+//     }
+
+//     if (order.status == 'pending') {
+//       return Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           Padding(
+//             padding: const EdgeInsets.only(bottom: 12.0),
+//             child: Row(
+//               mainAxisAlignment: MainAxisAlignment.center,
+//               children: [
+//                 const Icon(Icons.timer_outlined, color: Colors.red, size: 16),
+//                 const SizedBox(width: 6),
+//                 Text(
+//                   countdowns[order.id] ?? 'Menghitung waktu...',
+//                   style: const TextStyle(
+//                       color: Colors.red,
+//                       fontWeight: FontWeight.bold,
+//                       fontFamily: 'monospace',
+//                       letterSpacing: 1.5),
+//                 ),
+//               ],
+//             ),
+//           ),
+//           Row(children: actions),
+//         ],
+//       );
+//     }
+
+//     if (actions.isEmpty) return const SizedBox.shrink();
+//     return Row(children: actions);
+//   }
+
+//   void _confirmAction(BuildContext context, String title, String content,
+//       VoidCallback onConfirm) {
+//     showDialog(
+//       context: context,
+//       builder: (ctx) => AlertDialog(
+//         title: Text(title,
+//             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+//         content: Text(content, style: const TextStyle(fontSize: 14)),
+//         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+//         actions: [
+//           TextButton(
+//               onPressed: () => Navigator.pop(ctx),
+//               child: const Text('BATAL', style: TextStyle(color: Colors.grey))),
+//           ElevatedButton(
+//             style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
+//             onPressed: () {
+//               Navigator.pop(ctx);
+//               onConfirm();
+//             },
+//             child: const Text('YA, LANJUTKAN',
+//                 style: TextStyle(color: Colors.white)),
+//           )
+//         ],
+//       ),
+//     );
+//   }
+
+//   void _showWriteReviewDialog(BuildContext context, int transactionId,
+//       int productId, String productName) {
+//     int rating = 5;
+//     final commentCtrl = TextEditingController();
+//     XFile? selectedImage;
+//     bool isSubmitting = false;
+//     final ImagePicker picker = ImagePicker();
+
+//     showDialog(
+//       context: context,
+//       barrierDismissible: false,
+//       builder: (ctx) => StatefulBuilder(builder: (context, setStateDialog) {
+//         Future<void> pickImage() async {
+//           final picked = await picker.pickImage(
+//               source: ImageSource.gallery, imageQuality: 70);
+//           if (picked != null) {
+//             setStateDialog(() => selectedImage = picked);
+//           }
+//         }
+
+//         Future<void> submitReview() async {
+//           if (commentCtrl.text.trim().isEmpty) {
+//             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+//                 content: Text('Ulasan tidak boleh kosong!'),
+//                 backgroundColor: Colors.red));
+//             return;
+//           }
+//           setStateDialog(() => isSubmitting = true);
+//           try {
+//             final prefs = await SharedPreferences.getInstance();
+//             final token = prefs.getString('token');
+//             final dio = Dio(BaseOptions(
+//                 baseUrl: 'https://back.solher.co.id/api',
+//                 headers: {
+//                   'Authorization': 'Bearer $token',
+//                   'Accept': 'application/json'
+//                 }));
+
+//             final formData = FormData.fromMap({
+//               'transaction_id': transactionId,
+//               'product_id': productId,
+//               'rating': rating,
+//               'comment': commentCtrl.text.trim(),
+//             });
+
+//             if (selectedImage != null) {
+//               formData.files.add(MapEntry(
+//                   'images[]',
+//                   await MultipartFile.fromFile(selectedImage!.path,
+//                       filename: selectedImage!.name)));
+//             }
+
+//             final response = await dio.post('/reviews', data: formData);
+
+//             if (response.statusCode == 200 || response.statusCode == 201) {
+//               if (context.mounted) {
+//                 Navigator.pop(ctx);
+//                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+//                     content: Text('Terima kasih! Ulasan berhasil dikirim.'),
+//                     backgroundColor: Colors.green));
+//               }
+//             }
+//           } catch (e) {
+//             if (context.mounted) {
+//               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+//                   content: Text('Gagal mengirim ulasan.'),
+//                   backgroundColor: Colors.red));
+//             }
+//           } finally {
+//             if (mounted) setStateDialog(() => isSubmitting = false);
+//           }
+//         }
+
+//         return AlertDialog(
+//           title: const Text('Write a Review',
+//               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+//           content: SingleChildScrollView(
+//             child: Column(
+//               crossAxisAlignment: CrossAxisAlignment.start,
+//               mainAxisSize: MainAxisSize.min,
+//               children: [
+//                 Text(productName,
+//                     style: const TextStyle(
+//                         fontSize: 13,
+//                         color: Colors.grey,
+//                         fontWeight: FontWeight.w600)),
+//                 const SizedBox(height: 16),
+//                 Row(
+//                   mainAxisAlignment: MainAxisAlignment.center,
+//                   children: List.generate(5, (index) {
+//                     return IconButton(
+//                       icon: Icon(
+//                           index < rating ? Icons.star : Icons.star_border,
+//                           color: Colors.amber,
+//                           size: 32),
+//                       onPressed: () => setStateDialog(() => rating = index + 1),
+//                     );
+//                   }),
+//                 ),
+//                 const SizedBox(height: 16),
+//                 TextField(
+//                   controller: commentCtrl,
+//                   maxLines: 4,
+//                   decoration: InputDecoration(
+//                     hintText: 'Share your experience with this product...',
+//                     hintStyle: const TextStyle(fontSize: 12),
+//                     filled: true,
+//                     fillColor: Colors.grey.shade50,
+//                     border: OutlineInputBorder(
+//                         borderRadius: BorderRadius.circular(12),
+//                         borderSide: BorderSide.none),
+//                   ),
+//                 ),
+//                 const SizedBox(height: 16),
+//                 GestureDetector(
+//                   onTap: pickImage,
+//                   child: Container(
+//                     width: double.infinity,
+//                     height: 100,
+//                     decoration: BoxDecoration(
+//                       color: Colors.grey.shade100,
+//                       borderRadius: BorderRadius.circular(12),
+//                       border: Border.all(
+//                           color: Colors.grey.shade300,
+//                           style: BorderStyle.solid),
+//                     ),
+//                     child: selectedImage != null
+//                         ? ClipRRect(
+//                             borderRadius: BorderRadius.circular(12),
+//                             child: Image.file(File(selectedImage!.path),
+//                                 fit: BoxFit.cover))
+//                         : const Column(
+//                             mainAxisAlignment: MainAxisAlignment.center,
+//                             children: [
+//                               Icon(Icons.add_a_photo,
+//                                   color: Colors.grey, size: 28),
+//                               SizedBox(height: 8),
+//                               Text('Tap to add photo',
+//                                   style: TextStyle(
+//                                       fontSize: 11, color: Colors.grey)),
+//                             ],
+//                           ),
+//                   ),
+//                 ),
+//               ],
+//             ),
+//           ),
+//           shape:
+//               RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+//           actions: [
+//             TextButton(
+//               onPressed: isSubmitting ? null : () => Navigator.pop(ctx),
+//               child: const Text('CANCEL',
+//                   style: TextStyle(
+//                       color: Colors.grey, fontWeight: FontWeight.bold)),
+//             ),
+//             ElevatedButton(
+//               style: ElevatedButton.styleFrom(
+//                   backgroundColor: Colors.black,
+//                   foregroundColor: Colors.white,
+//                   shape: RoundedRectangleBorder(
+//                       borderRadius: BorderRadius.circular(8))),
+//               onPressed: isSubmitting ? null : submitReview,
+//               child: isSubmitting
+//                   ? const SizedBox(
+//                       height: 16,
+//                       width: 16,
+//                       child: CircularProgressIndicator(
+//                           color: Colors.white, strokeWidth: 2))
+//                   : const Text('SUBMIT',
+//                       style: TextStyle(fontWeight: FontWeight.bold)),
+//             )
+//           ],
+//         );
+//       }),
+//     );
+//   }
+
+//   void _showRefundDialog(BuildContext context, int transactionId) {
+//     final reasonCtrl = TextEditingController();
+
+//     showDialog(
+//       context: context,
+//       builder: (ctx) => AlertDialog(
+//         title: const Text('Request Refund',
+//             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+//         content: Column(
+//           mainAxisSize: MainAxisSize.min,
+//           crossAxisAlignment: CrossAxisAlignment.start,
+//           children: [
+//             const Text('Alasan Pengembalian:',
+//                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+//             const SizedBox(height: 8),
+//             TextField(
+//               controller: reasonCtrl,
+//               maxLines: 3,
+//               decoration: InputDecoration(
+//                 filled: true,
+//                 fillColor: Colors.grey.shade100,
+//                 hintText: 'Jelaskan alasan Anda...',
+//                 border: OutlineInputBorder(
+//                     borderRadius: BorderRadius.circular(8),
+//                     borderSide: BorderSide.none),
+//               ),
+//             ),
+//             const SizedBox(height: 16),
+//             const Text('Bukti Foto/Video:',
+//                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+//             const SizedBox(height: 8),
+//             Container(
+//               width: double.infinity,
+//               padding: const EdgeInsets.all(12),
+//               decoration: BoxDecoration(
+//                   border: Border.all(
+//                       color: Colors.grey.shade300, style: BorderStyle.solid),
+//                   borderRadius: BorderRadius.circular(8)),
+//               child: const Text(
+//                   'Ketuk untuk memilih file (Butuh implementasi ImagePicker)',
+//                   style: TextStyle(fontSize: 10, color: Colors.grey),
+//                   textAlign: TextAlign.center),
+//             )
+//           ],
+//         ),
+//         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+//         actions: [
+//           TextButton(
+//               onPressed: () => Navigator.pop(ctx),
+//               child: const Text('BATAL', style: TextStyle(color: Colors.grey))),
+//           ElevatedButton(
+//             style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
+//             onPressed: () {
+//               if (reasonCtrl.text.isEmpty) return;
+//               Navigator.pop(ctx);
+//               context.read<OrderBloc>().add(RequestRefundRequested(
+//                   transactionId: transactionId,
+//                   reason: reasonCtrl.text,
+//                   filePath: '/dummy/path/file.jpg'));
+//             },
+//             child: const Text('KIRIM', style: TextStyle(color: Colors.white)),
+//           )
+//         ],
+//       ),
+//     );
+//   }
+// }
+
 import 'dart:io';
 import 'dart:async';
 import 'package:flutter/material.dart';
@@ -5432,7 +6598,6 @@ class _OrderPageState extends State<OrderPage> {
   String _activeTab = 'all';
   final TextEditingController _searchCtrl = TextEditingController();
 
-  // 👇 SCROLL CONTROLLER UNTUK INFINITE SCROLLING 👇
   final ScrollController _scrollController = ScrollController();
 
   Timer? _countdownTimer;
@@ -5451,7 +6616,6 @@ class _OrderPageState extends State<OrderPage> {
   @override
   void initState() {
     super.initState();
-    // Mendeteksi ketika user men-scroll hingga bagian paling bawah
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
           _scrollController.position.maxScrollExtent - 200) {
@@ -5565,6 +6729,49 @@ class _OrderPageState extends State<OrderPage> {
     return null;
   }
 
+  // 👇 [BARU] FUNGSI MENGHITUNG JUMLAH ORDER UNTUK BADGE 👇
+  int _getTabCount(List<TransactionModel> orders, String tabValue) {
+    // Saring pesanan hantu
+    final validOrders = orders
+        .where((o) => o.status.toLowerCase() != 'awaiting_payment')
+        .toList();
+
+    switch (tabValue) {
+      case 'all':
+        return validOrders.length;
+      case 'unpaid':
+        return validOrders
+            .where((o) => o.status.toLowerCase() == 'pending')
+            .length;
+      case 'to_ship':
+        return validOrders
+            .where((o) => o.status.toLowerCase() == 'processing')
+            .length;
+      case 'shipping':
+        return validOrders
+            .where((o) => ['shipped', 'shipping', 'picking_up', 'dropping_off']
+                .contains(o.status.toLowerCase()))
+            .length;
+      case 'completed':
+        return validOrders
+            .where((o) => o.status.toLowerCase() == 'completed')
+            .length;
+      case 'cancelled':
+        return validOrders
+            .where((o) =>
+                ['cancelled', 'expired'].contains(o.status.toLowerCase()))
+            .length;
+      case 'issues':
+        return validOrders
+            .where((o) =>
+                o.status.toLowerCase().contains('refund') ||
+                o.status.toLowerCase().contains('return'))
+            .length;
+      default:
+        return 0;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
@@ -5610,7 +6817,8 @@ class _OrderPageState extends State<OrderPage> {
                     } else if (state is OrderLoaded) {
                       return Column(
                         children: [
-                          _buildTabs(context),
+                          // 👇 Kirim 'state' ke _buildTabs agar bisa menghitung badge 👇
+                          _buildTabs(context, state),
                           Expanded(child: _buildOrderList(state)),
                         ],
                       );
@@ -5626,7 +6834,6 @@ class _OrderPageState extends State<OrderPage> {
     );
   }
 
-  // 👇 PERBAIKAN: Gunakan onSubmitted agar pencarian via Backend tidak dispam 👇
   Widget _buildSearchBar(BuildContext context) {
     return Container(
       color: Colors.white,
@@ -5634,7 +6841,6 @@ class _OrderPageState extends State<OrderPage> {
       child: TextField(
         controller: _searchCtrl,
         onSubmitted: (val) {
-          // Menembak data baru ke backend
           context
               .read<OrderBloc>()
               .add(FetchOrders(isRefresh: true, search: val, tab: _activeTab));
@@ -5660,7 +6866,8 @@ class _OrderPageState extends State<OrderPage> {
     );
   }
 
-  Widget _buildTabs(BuildContext context) {
+  // 👇 [MODIFIKASI] Sisipkan state untuk menghitung badge pada desain Tab 👇
+  Widget _buildTabs(BuildContext context, OrderLoaded state) {
     return Container(
       width: double.infinity,
       color: Colors.white,
@@ -5672,21 +6879,48 @@ class _OrderPageState extends State<OrderPage> {
         child: Row(
           children: _tabs.map((tab) {
             final isSelected = _activeTab == tab['value'];
+            final count = _getTabCount(state.orders, tab['value']!);
 
             return Padding(
               padding: const EdgeInsets.only(right: 8),
               child: ChoiceChip(
-                label: Text(tab['label']!,
-                    style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1,
-                        color:
-                            isSelected ? Colors.white : Colors.grey.shade600)),
+                label: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(tab['label']!,
+                        style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1,
+                            color: isSelected
+                                ? Colors.white
+                                : Colors.grey.shade600)),
+
+                    // 👇 [BARU] WIDGET BADGE ANGKA 👇
+                    if (count > 0) ...[
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: isSelected ? Colors.white : Colors.black,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          '$count',
+                          style: TextStyle(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w900,
+                            color: isSelected ? Colors.black : Colors.white,
+                          ),
+                        ),
+                      ),
+                    ]
+                  ],
+                ),
                 selected: isSelected,
                 onSelected: (_) {
                   setState(() => _activeTab = tab['value']!);
-                  // Menembak permintaan data baru ke backend berdasarkan Tab
                   context.read<OrderBloc>().add(FetchOrders(
                       isRefresh: true,
                       tab: _activeTab,
@@ -5707,41 +6941,7 @@ class _OrderPageState extends State<OrderPage> {
     );
   }
 
-  // 👇 PERBAIKAN: Langsung membaca List Orders karena Filtering sudah dilakukan di Backend 👇
-  // Widget _buildOrderList(OrderLoaded state) {
-  //   if (state.orders.isEmpty) {
-  //     return const Center(
-  //         child: Text('Tidak ada pesanan ditemukan.',
-  //             style:
-  //                 TextStyle(color: Colors.grey, fontStyle: FontStyle.italic)));
-  //   }
-
-  //   return ListView.separated(
-  //     controller: _scrollController,
-  //     physics: const BouncingScrollPhysics(),
-  //     padding: const EdgeInsets.all(16),
-  //     itemCount:
-  //         state.hasReachedMax ? state.orders.length : state.orders.length + 1,
-  //     separatorBuilder: (_, __) => const SizedBox(height: 16),
-  //     itemBuilder: (context, index) {
-  //       // Tampilkan indikator loading di paling bawah jika data belum mentok
-  //       if (index >= state.orders.length) {
-  //         return const Center(
-  //           child: Padding(
-  //             padding: EdgeInsets.all(16.0),
-  //             child: CircularProgressIndicator(
-  //                 color: Colors.black, strokeWidth: 2),
-  //           ),
-  //         );
-  //       }
-  //       return _buildOrderCard(context, state.orders[index]);
-  //     },
-  //   );
-  // }
-
-  // 👇 PERBAIKAN: Langsung membaca List Orders dan Menyaring Ghost Order 👇
   Widget _buildOrderList(OrderLoaded state) {
-    // Saring pesanan hantu (awaiting_payment) secara ketat di sini
     final validOrders = state.orders
         .where((order) => order.status.toLowerCase() != 'awaiting_payment')
         .toList();
@@ -5761,7 +6961,6 @@ class _OrderPageState extends State<OrderPage> {
           state.hasReachedMax ? validOrders.length : validOrders.length + 1,
       separatorBuilder: (_, __) => const SizedBox(height: 16),
       itemBuilder: (context, index) {
-        // Tampilkan indikator loading di paling bawah jika data belum mentok
         if (index >= validOrders.length) {
           return const Center(
             child: Padding(

@@ -3608,6 +3608,7 @@ import 'package:solher_mobile/blocs/contact/contact_bloc.dart';
 import 'package:solher_mobile/repositories/affiliate_repository.dart';
 import 'package:solher_mobile/repositories/contact_repository.dart';
 import 'package:solher_mobile/screens/contact_page.dart';
+import 'package:solher_mobile/screens/order_page.dart';
 import 'package:solher_mobile/screens/solher_club_page.dart';
 import 'package:solher_mobile/screens/terms_condition_page.dart';
 import 'package:solher_mobile/screens/privacy_policy_page.dart';
@@ -4345,10 +4346,12 @@ class _ProfilePageState extends State<ProfilePage> {
           subtitle: 'Lacak & Riwayat',
           color: Colors.blue,
           onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                content: Text('Mengarahkan ke halaman pesanan...')));
+            // ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            //     content: Text('Mengarahkan ke halaman pesanan...')));
             // TODO: Sesuaikan dengan route OrderHistoryPage Anda
             // Navigator.pushNamed(context, '/orders');
+            Navigator.push(context,
+                MaterialPageRoute(builder: (_) => const OrderPage()));
           },
         ),
         _buildGridItem(
