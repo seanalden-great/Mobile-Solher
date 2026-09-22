@@ -1373,11 +1373,35 @@ class _SolherClubPageState extends State<SolherClubPage> {
   ];
 
   // 👇 DATA FAQ 👇
+  // final List<Map<String, String>> _faqs = [
+  //   {
+  //     "question": "Bagaimana cara perhitungan Poin Solhér?",
+  //     "answer":
+  //         "Untuk setiap pembelanjaan Rp 1.000 pada koleksi kami, Anda akan mendapatkan 1 Poin sebagai Muse. Seiring peningkatan status, reward Anda berlipat ganda: anggota Élan mendapatkan 1,5 Poin, dan anggota Héritage mendapatkan 2 Poin untuk setiap Rp 1.000."
+  //   },
+  //   {
+  //     "question": "Bagaimana cara menukarkan Poin yang terkumpul?",
+  //     "answer":
+  //         "Poin Anda memiliki nilai nyata. Anda dapat menggunakannya saat checkout untuk mengurangi total pembayaran. Setiap 1.000 Poin memberikan potongan langsung sebesar Rp 1.000."
+  //   },
+  //   {
+  //     "question": "Apakah Status dan Poin saya bisa kedaluwarsa?",
+  //     "answer":
+  //         "Poin dan status tier Anda berlaku selama 12 bulan dari tanggal pembelian terakhir. Melanjutkan perjalanan Anda bersama kami dalam tahun tersebut secara otomatis memperpanjang masa berlakunya."
+  //   },
+  //   {
+  //     "question": "Bagaimana cara mengklaim Keuntungan Bulan Ulang Tahun saya?",
+  //     "answer":
+  //         "Hak istimewa ulang tahun yang dirancang khusus akan dikirimkan secara eksklusif ke alamat email Anda yang terdaftar pada awal bulan ulang tahun Anda. Pastikan detail profil Anda telah lengkap."
+  //   }
+  // ];
+
+  // 👇 DATA FAQ 👇
   final List<Map<String, String>> _faqs = [
     {
       "question": "Bagaimana cara perhitungan Poin Solhér?",
       "answer":
-          "Untuk setiap pembelanjaan Rp 1.000 pada koleksi kami, Anda akan mendapatkan 1 Poin sebagai Muse. Seiring peningkatan status, reward Anda berlipat ganda: anggota Élan mendapatkan 1,5 Poin, dan anggota Héritage mendapatkan 2 Poin untuk setiap Rp 1.000."
+          "Untuk setiap pembelanjaan Rp 1.000 pada koleksi kami, Anda akan mendapatkan 1 Poin, terlepas dari tingkatan (tier) Anda saat ini. Hal ini memastikan pengalaman pengumpulan poin yang transparan dan jelas bagi seluruh anggota komunitas kami."
     },
     {
       "question": "Bagaimana cara menukarkan Poin yang terkumpul?",

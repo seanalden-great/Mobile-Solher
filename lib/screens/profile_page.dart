@@ -3946,14 +3946,60 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  // Map<String, dynamic> _getUserTier(int points) {
+  //   if (points < 2500) {
+  //     return {
+  //       'name': 'Silver',
+  //       'colors': [Colors.grey.shade400, Colors.grey.shade600],
+  //       'icon': '🥈',
+  //       'next': 2500,
+  //       'nextName': 'Gold',
+  //       'benefits': [
+  //         'Dapatkan poin setiap belanja',
+  //         'Bebas penukaran poin untuk diskon'
+  //       ]
+  //     };
+  //   } else if (points < 10000) {
+  //     return {
+  //       'name': 'Gold',
+  //       'colors': [Colors.amber.shade400, Colors.orange.shade700],
+  //       'icon': '🥇',
+  //       'next': 10000,
+  //       'nextName': 'Platinum',
+  //       'benefits': [
+  //         'Semua fitur Silver',
+  //         'Bonus Ekstra Poin Tahunan',
+  //         'Akses Rilis Lebih Awal'
+  //       ]
+  //     };
+  //   } else {
+  //     return {
+  //       'name': 'Platinum',
+  //       'colors': [Colors.indigo.shade400, Colors.purple.shade700],
+  //       'icon': '💎',
+  //       'next': null,
+  //       'nextName': null,
+  //       'benefits': [
+  //         'Semua fitur Gold',
+  //         'Pengiriman Prioritas VIP',
+  //         'Layanan Personal Shopper'
+  //       ]
+  //     };
+  //   }
+  // }
+
   Map<String, dynamic> _getUserTier(int points) {
     if (points < 2500) {
       return {
-        'name': 'Silver',
-        'colors': [Colors.grey.shade400, Colors.grey.shade600],
-        'icon': '🥈',
+        'name': 'Muse',
+        'colors': [
+          Colors.grey.shade100,
+          Colors.grey.shade300
+        ], // Putih-Abu terang
+        'textColor': Colors.black87,
+        'icon': '✧',
         'next': 2500,
-        'nextName': 'Gold',
+        'nextName': 'Élan',
         'benefits': [
           'Dapatkan poin setiap belanja',
           'Bebas penukaran poin untuk diskon'
@@ -3961,27 +4007,35 @@ class _ProfilePageState extends State<ProfilePage> {
       };
     } else if (points < 10000) {
       return {
-        'name': 'Gold',
-        'colors': [Colors.amber.shade400, Colors.orange.shade700],
-        'icon': '🥇',
+        'name': 'Élan',
+        'colors': [
+          const Color(0xFFFDFBF7),
+          const Color(0xFFE8E2D2)
+        ], // Krem Élan
+        'textColor': const Color(0xFF8B7355), // Emas kecoklatan
+        'icon': '✦',
         'next': 10000,
-        'nextName': 'Platinum',
+        'nextName': 'Héritage',
         'benefits': [
-          'Semua fitur Silver',
-          'Bonus Ekstra Poin Tahunan',
+          'Semua fitur Muse',
+          'Ekstra Diskon Privilege 5%',
           'Akses Rilis Lebih Awal'
         ]
       };
     } else {
       return {
-        'name': 'Platinum',
-        'colors': [Colors.indigo.shade400, Colors.purple.shade700],
-        'icon': '💎',
+        'name': 'Héritage',
+        'colors': [
+          const Color(0xFF111111),
+          const Color(0xFF333333)
+        ], // Hitam Héritage
+        'textColor': Colors.white,
+        'icon': '❈',
         'next': null,
         'nextName': null,
         'benefits': [
-          'Semua fitur Gold',
-          'Pengiriman Prioritas VIP',
+          'Semua fitur Élan',
+          'Ekstra Diskon Privilege 10%',
           'Layanan Personal Shopper'
         ]
       };
@@ -4611,63 +4665,196 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   // 👇 PERBAIKAN WIDGET KARTU LOYALITAS 👇
+  // Widget _buildSolherClubCard(int points) {
+  //   final tier = _getUserTier(points);
+  //   return Container(
+  //     padding: const EdgeInsets.all(24),
+  //     decoration: BoxDecoration(
+  //       gradient: LinearGradient(
+  //         colors: tier['colors'],
+  //         begin: Alignment.topLeft,
+  //         end: Alignment.bottomRight,
+  //       ),
+  //       borderRadius: BorderRadius.circular(24),
+  //       boxShadow: [
+  //         BoxShadow(
+  //             color: tier['colors'][0].withOpacity(0.3),
+  //             blurRadius: 12,
+  //             offset: const Offset(0, 6))
+  //       ],
+  //     ),
+  //     child: Column(
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       children: [
+  //         const Text('SOLHER CLUB',
+  //             style: TextStyle(
+  //                 color: Colors.white70,
+  //                 fontSize: 10,
+  //                 fontWeight: FontWeight.bold,
+  //                 letterSpacing: 2)),
+  //         const SizedBox(height: 12),
+  //         Row(
+  //           children: [
+  //             Text(tier['icon'], style: const TextStyle(fontSize: 24)),
+  //             const SizedBox(width: 8),
+  //             Text('${tier['name']} TIER',
+  //                 style: const TextStyle(
+  //                     color: Colors.white,
+  //                     fontSize: 16,
+  //                     fontWeight: FontWeight.w900,
+  //                     letterSpacing: 1)),
+  //           ],
+  //         ),
+  //         const SizedBox(height: 24),
+  //         const Text('AVAILABLE POINTS',
+  //             style: TextStyle(
+  //                 color: Colors.white70, fontSize: 10, letterSpacing: 1)),
+  //         Row(
+  //           crossAxisAlignment: CrossAxisAlignment.end,
+  //           children: [
+  //             Text('$points',
+  //                 style: const TextStyle(
+  //                     color: Colors.white,
+  //                     fontSize: 40,
+  //                     fontWeight: FontWeight.w900)),
+  //             const Padding(
+  //               padding: EdgeInsets.only(bottom: 8.0, left: 4.0),
+  //               child: Text('Pts',
+  //                   style: TextStyle(
+  //                       color: Colors.white, fontWeight: FontWeight.bold)),
+  //             ),
+  //           ],
+  //         ),
+  //         if (tier['next'] != null) ...[
+  //           const SizedBox(height: 16),
+  //           Row(
+  //             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //             children: [
+  //               Text(tier['name'],
+  //                   style: const TextStyle(
+  //                       color: Colors.white70,
+  //                       fontSize: 10,
+  //                       fontWeight: FontWeight.bold)),
+  //               Text(tier['nextName'],
+  //                   style: const TextStyle(
+  //                       color: Colors.white70,
+  //                       fontSize: 10,
+  //                       fontWeight: FontWeight.bold)),
+  //             ],
+  //           ),
+  //           const SizedBox(height: 6),
+  //           ClipRRect(
+  //             borderRadius: BorderRadius.circular(10),
+  //             child: LinearProgressIndicator(
+  //               value: points / tier['next'],
+  //               backgroundColor: Colors.black26,
+  //               color: Colors.white,
+  //               minHeight: 6,
+  //             ),
+  //           ),
+  //         ],
+  //         const SizedBox(height: 24),
+  //         const Text('KEUNTUNGAN ANDA:',
+  //             style: TextStyle(
+  //                 color: Colors.white70,
+  //                 fontSize: 10,
+  //                 fontWeight: FontWeight.bold,
+  //                 letterSpacing: 1)),
+  //         const SizedBox(height: 8),
+  //         Column(
+  //           crossAxisAlignment: CrossAxisAlignment.start,
+  //           children: (tier['benefits'] as List<String>)
+  //               .map((b) => Padding(
+  //                     padding: const EdgeInsets.only(bottom: 6.0),
+  //                     child: Row(
+  //                       children: [
+  //                         const Icon(Icons.check_circle_outline,
+  //                             color: Colors.white, size: 14),
+  //                         const SizedBox(width: 8),
+  //                         Expanded(
+  //                             child: Text(b,
+  //                                 style: const TextStyle(
+  //                                     color: Colors.white, fontSize: 12))),
+  //                       ],
+  //                     ),
+  //                   ))
+  //               .toList(),
+  //         )
+  //       ],
+  //     ),
+  //   );
+  // }
+
+  // 👇 PERBAIKAN WIDGET KARTU SOLHÉR CIRCLE 👇
   Widget _buildSolherClubCard(int points) {
     final tier = _getUserTier(points);
+    final Color textColor = tier['textColor'];
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: tier['colors'],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-              color: tier['colors'][0].withOpacity(0.3),
-              blurRadius: 12,
-              offset: const Offset(0, 6))
-        ],
-      ),
+          gradient: LinearGradient(
+            colors: tier['colors'],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+                color: Colors.black.withOpacity(0.08),
+                blurRadius: 15,
+                offset: const Offset(0, 6))
+          ],
+          border: Border.all(
+            color: tier['name'] == 'Muse'
+                ? Colors.grey.shade300
+                : Colors.transparent,
+            width: 1,
+          )),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('SOLHER CLUB',
+          Text('THE SOLHÉR CIRCLE',
               style: TextStyle(
-                  color: Colors.white70,
+                  color: textColor.withOpacity(0.7),
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 2)),
           const SizedBox(height: 12),
           Row(
             children: [
-              Text(tier['icon'], style: const TextStyle(fontSize: 24)),
-              const SizedBox(width: 8),
-              Text('${tier['name']} TIER',
-                  style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
+              Text(tier['icon'],
+                  style: TextStyle(fontSize: 32, color: textColor)),
+              const SizedBox(width: 12),
+              Text(tier['name'].toUpperCase(),
+                  style: TextStyle(
+                      color: textColor,
+                      fontFamily: 'serif',
+                      fontSize: 24,
                       fontWeight: FontWeight.w900,
-                      letterSpacing: 1)),
+                      letterSpacing: 2)),
             ],
           ),
           const SizedBox(height: 24),
-          const Text('AVAILABLE POINTS',
+          Text('AVAILABLE POINTS',
               style: TextStyle(
-                  color: Colors.white70, fontSize: 10, letterSpacing: 1)),
+                  color: textColor.withOpacity(0.7),
+                  fontSize: 10,
+                  letterSpacing: 1,
+                  fontWeight: FontWeight.bold)),
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text('$points',
-                  style: const TextStyle(
-                      color: Colors.white,
+                  style: TextStyle(
+                      color: textColor,
                       fontSize: 40,
                       fontWeight: FontWeight.w900)),
-              const Padding(
-                padding: EdgeInsets.only(bottom: 8.0, left: 4.0),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8.0, left: 4.0),
                 child: Text('Pts',
                     style: TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.bold)),
+                        color: textColor, fontWeight: FontWeight.bold)),
               ),
             ],
           ),
@@ -4677,13 +4864,13 @@ class _ProfilePageState extends State<ProfilePage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(tier['name'],
-                    style: const TextStyle(
-                        color: Colors.white70,
+                    style: TextStyle(
+                        color: textColor.withOpacity(0.8),
                         fontSize: 10,
                         fontWeight: FontWeight.bold)),
                 Text(tier['nextName'],
-                    style: const TextStyle(
-                        color: Colors.white70,
+                    style: TextStyle(
+                        color: textColor.withOpacity(0.8),
                         fontSize: 10,
                         fontWeight: FontWeight.bold)),
               ],
@@ -4693,16 +4880,27 @@ class _ProfilePageState extends State<ProfilePage> {
               borderRadius: BorderRadius.circular(10),
               child: LinearProgressIndicator(
                 value: points / tier['next'],
-                backgroundColor: Colors.black26,
-                color: Colors.white,
+                backgroundColor: textColor.withOpacity(0.2),
+                color: textColor,
                 minHeight: 6,
               ),
             ),
+          ] else ...[
+            const SizedBox(height: 16),
+            Align(
+              alignment: Alignment.centerRight,
+              child: Text('LINGKARAN TERTINGGI TERCAPAI',
+                  style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1,
+                      color: textColor)),
+            ),
           ],
           const SizedBox(height: 24),
-          const Text('KEUNTUNGAN ANDA:',
+          Text('KEUNTUNGAN ANDA:',
               style: TextStyle(
-                  color: Colors.white70,
+                  color: textColor.withOpacity(0.7),
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 1)),
@@ -4711,16 +4909,19 @@ class _ProfilePageState extends State<ProfilePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: (tier['benefits'] as List<String>)
                 .map((b) => Padding(
-                      padding: const EdgeInsets.only(bottom: 6.0),
+                      padding: const EdgeInsets.only(bottom: 8.0),
                       child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Icon(Icons.check_circle_outline,
-                              color: Colors.white, size: 14),
+                          Icon(Icons.check_circle_outline,
+                              color: textColor.withOpacity(0.8), size: 14),
                           const SizedBox(width: 8),
                           Expanded(
                               child: Text(b,
-                                  style: const TextStyle(
-                                      color: Colors.white, fontSize: 12))),
+                                  style: TextStyle(
+                                      color: textColor,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500))),
                         ],
                       ),
                     ))
