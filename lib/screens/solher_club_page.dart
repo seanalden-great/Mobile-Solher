@@ -1501,91 +1501,220 @@ class _SolherClubPageState extends State<SolherClubPage> {
 
         return Scaffold(
           backgroundColor: const Color(0xFFFAFAFA),
-          body: RefreshIndicator(
-            color: Colors.black, // Warna spinner elegan khas Solher
-            onRefresh: () async {
-              // Simulasikan delay sedikit agar animasi terasa smooth, lalu muat ulang poin
-              await Future.delayed(const Duration(milliseconds: 800));
-              await _loadUserPoints();
-            },
-            child: CustomScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              slivers: [
-                // 👇 HERO BANNER (SLIVER APP BAR) 👇
-                SliverAppBar(
-                  expandedHeight: 450,
-                  pinned: true,
-                  stretch: true,
-                  backgroundColor: Colors.black,
-                  iconTheme: const IconThemeData(color: Colors.white),
-                  flexibleSpace: FlexibleSpaceBar(
-                    background: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        Container(color: Colors.black),
-                        Image.asset(
-                          'assets/images/solher_club.jpg',
-                          fit: BoxFit.cover,
-                          color: Colors.black.withOpacity(0.5),
-                          colorBlendMode: BlendMode.darken,
-                        ),
-                        Container(
-                          decoration: const BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [Colors.black87, Colors.transparent],
-                              begin: Alignment.bottomCenter,
-                              end: Alignment.topCenter,
-                            ),
+          body: CustomScrollView(
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              // 👇 HERO BANNER (SLIVER APP BAR) 👇
+              SliverAppBar(
+                expandedHeight: 450,
+                pinned: true,
+                stretch: true,
+                backgroundColor: Colors.black,
+                iconTheme: const IconThemeData(color: Colors.white),
+                flexibleSpace: FlexibleSpaceBar(
+                  background: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      Container(color: Colors.black),
+                      Image.asset(
+                        'assets/images/solher_club.jpg',
+                        fit: BoxFit.cover,
+                        color: Colors.black.withOpacity(0.5),
+                        colorBlendMode: BlendMode.darken,
+                      ),
+                      Container(
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [Colors.black87, Colors.transparent],
+                            begin: Alignment.bottomCenter,
+                            end: Alignment.topCenter,
                           ),
                         ),
-                        Positioned(
-                          bottom: 60,
-                          left: 24,
-                          right: 24,
+                      ),
+                      Positioned(
+                        bottom: 60,
+                        left: 24,
+                        right: 24,
+                        child: Column(
+                          children: [
+                            const Text(
+                              'THE SOLHÉR CIRCLE',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontFamily: 'serif',
+                                  fontSize: 34,
+                                  fontWeight: FontWeight.bold,
+                                  height: 1.1),
+                            ),
+                            const SizedBox(height: 12),
+                            const Text(
+                              'LEBIH DARI KEANGGOTAAN. TEMPAT UNTUK BERNAUNG.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: 1.5),
+                            ),
+                            if (!isAuthenticated) ...[
+                              const SizedBox(height: 32),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  foregroundColor: Colors.black,
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 36, vertical: 16),
+                                  shape: const RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.zero),
+                                  elevation: 5,
+                                ),
+                                onPressed: _handleJoinClick,
+                                child: const Text(
+                                  'BERGABUNG BERSAMA KAMI',
+                                  style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: 2),
+                                ),
+                              )
+                            ]
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+              ),
+
+              // 👇 KONTEN HALAMAN 👇
+              SliverToBoxAdapter(
+                child: Transform.translate(
+                  offset: const Offset(0, -30),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                    child: Column(
+                      children: [
+                        // KARTU CIRCLE STATUS (HANYA JIKA LOGIN)
+                        if (isAuthenticated) _buildMemberStatusCard(tierInfo),
+
+                        const SizedBox(height: 40),
+
+                        // 👇 STORYTELLING INTRODUCTION 👇
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 16.0),
+                          child: Text(
+                            '"Setiap karya SOLHÉR dibuat untuk menemani seorang wanita melalui babak-babak dalam hidupnya. The SOLHÉR Circle adalah cara kami merayakan para wanita yang memilih untuk membawa cerita tersebut bersama kami."',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                fontFamily: 'serif',
+                                fontStyle: FontStyle.italic,
+                                fontSize: 16,
+                                color: Color(0xFF4B5563),
+                                height: 1.6),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 24.0),
+                          child: Text(
+                            'Mulai dari karya pertama Anda hingga yang akan Anda simpan bertahun-tahun kemudian, nikmati keistimewaan, akses awal, dan undangan yang diciptakan khusus untuk komunitas kami.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                fontSize: 13,
+                                color: Color(0xFF6B7280),
+                                height: 1.8),
+                          ),
+                        ),
+                        const SizedBox(height: 64),
+
+                        // 👇 KARTU TIER MUSE 👇
+                        _buildMuseTierCard(tierInfo['name'], isAuthenticated),
+                        const SizedBox(height: 24),
+
+                        // 👇 KARTU TIER ÉLAN 👇
+                        _buildElanTierCard(tierInfo['name'], isAuthenticated),
+                        const SizedBox(height: 24),
+
+                        // 👇 KARTU TIER HÉRITAGE 👇
+                        _buildHeritageTierCard(
+                            tierInfo['name'], isAuthenticated),
+
+                        // 👇 [BARU] FAQ SECTION 👇
+                        const SizedBox(height: 64),
+                        const Text(
+                          'PERTANYAAN YANG SERING DIAJUKAN',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontFamily: 'serif',
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.5,
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        _buildFaqSection(),
+                        // 👆 ================= 👆
+
+                        // 👇 CLOSING FOOTER 👇
+                        const SizedBox(height: 32),
+                        Container(
+                          width: double.infinity,
+                          decoration: const BoxDecoration(
+                              border: Border(
+                                  top: BorderSide(color: Color(0xFFE5E7EB)))),
+                          padding: const EdgeInsets.only(top: 48, bottom: 48),
                           child: Column(
                             children: [
                               const Text(
-                                'THE SOLHÉR CIRCLE',
+                                'CERITA ANDA.\nKARYA ANDA.\nLINGKARAN ANDA.',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
-                                    color: Colors.white,
-                                    fontFamily: 'serif',
-                                    fontSize: 34,
-                                    fontWeight: FontWeight.bold,
-                                    height: 1.1),
+                                  fontFamily: 'serif',
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 2,
+                                  height: 1.5,
+                                ),
                               ),
-                              const SizedBox(height: 12),
+                              const SizedBox(height: 24),
                               const Text(
-                                'LEBIH DARI KEANGGOTAAN. TEMPAT UNTUK BERNAUNG.',
+                                'Karena hal-hal paling bermakna yang kita bawa bukanlah sekadar kepemilikan.',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w600,
-                                    letterSpacing: 1.5),
+                                  fontFamily: 'serif',
+                                  fontStyle: FontStyle.italic,
+                                  fontSize: 13,
+                                  color: Colors.grey,
+                                ),
                               ),
-                              if (!isAuthenticated) ...[
-                                const SizedBox(height: 32),
-                                ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.white,
-                                    foregroundColor: Colors.black,
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 36, vertical: 16),
-                                    shape: const RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.zero),
-                                    elevation: 5,
+                              const SizedBox(height: 8),
+                              const Text(
+                                'Mereka menjadi bagian dari siapa kita.',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontFamily: 'serif',
+                                  fontStyle: FontStyle.italic,
+                                  fontSize: 13,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                              const SizedBox(height: 48),
+                              Container(
+                                padding: const EdgeInsets.only(bottom: 8),
+                                decoration: const BoxDecoration(
+                                    border: Border(
+                                        bottom: BorderSide(
+                                            color: Colors.black, width: 1.5))),
+                                child: const Text(
+                                  'SELAMAT DATANG DI SOLHÉR CIRCLE.',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 3,
                                   ),
-                                  onPressed: _handleJoinClick,
-                                  child: const Text(
-                                    'BERGABUNG BERSAMA KAMI',
-                                    style: TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w900,
-                                        letterSpacing: 2),
-                                  ),
-                                )
-                              ]
+                                ),
+                              )
                             ],
                           ),
                         )
@@ -1593,145 +1722,8 @@ class _SolherClubPageState extends State<SolherClubPage> {
                     ),
                   ),
                 ),
-            
-                // 👇 KONTEN HALAMAN 👇
-                SliverToBoxAdapter(
-                  child: Transform.translate(
-                    offset: const Offset(0, -30),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                      child: Column(
-                        children: [
-                          // KARTU CIRCLE STATUS (HANYA JIKA LOGIN)
-                          if (isAuthenticated) _buildMemberStatusCard(tierInfo),
-            
-                          const SizedBox(height: 40),
-            
-                          // 👇 STORYTELLING INTRODUCTION 👇
-                          const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 16.0),
-                            child: Text(
-                              '"Setiap karya SOLHÉR dibuat untuk menemani seorang wanita melalui babak-babak dalam hidupnya. The SOLHÉR Circle adalah cara kami merayakan para wanita yang memilih untuk membawa cerita tersebut bersama kami."',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                  fontFamily: 'serif',
-                                  fontStyle: FontStyle.italic,
-                                  fontSize: 16,
-                                  color: Color(0xFF4B5563),
-                                  height: 1.6),
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-                          const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 24.0),
-                            child: Text(
-                              'Mulai dari karya pertama Anda hingga yang akan Anda simpan bertahun-tahun kemudian, nikmati keistimewaan, akses awal, dan undangan yang diciptakan khusus untuk komunitas kami.',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                  fontSize: 13,
-                                  color: Color(0xFF6B7280),
-                                  height: 1.8),
-                            ),
-                          ),
-                          const SizedBox(height: 64),
-            
-                          // 👇 KARTU TIER MUSE 👇
-                          _buildMuseTierCard(tierInfo['name'], isAuthenticated),
-                          const SizedBox(height: 24),
-            
-                          // 👇 KARTU TIER ÉLAN 👇
-                          _buildElanTierCard(tierInfo['name'], isAuthenticated),
-                          const SizedBox(height: 24),
-            
-                          // 👇 KARTU TIER HÉRITAGE 👇
-                          _buildHeritageTierCard(
-                              tierInfo['name'], isAuthenticated),
-            
-                          // 👇 [BARU] FAQ SECTION 👇
-                          const SizedBox(height: 64),
-                          const Text(
-                            'PERTANYAAN YANG SERING DIAJUKAN',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontFamily: 'serif',
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1.5,
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-                          _buildFaqSection(),
-                          // 👆 ================= 👆
-            
-                          // 👇 CLOSING FOOTER 👇
-                          const SizedBox(height: 32),
-                          Container(
-                            width: double.infinity,
-                            decoration: const BoxDecoration(
-                                border: Border(
-                                    top: BorderSide(color: Color(0xFFE5E7EB)))),
-                            padding: const EdgeInsets.only(top: 48, bottom: 48),
-                            child: Column(
-                              children: [
-                                const Text(
-                                  'CERITA ANDA.\nKARYA ANDA.\nLINGKARAN ANDA.',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontFamily: 'serif',
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                    letterSpacing: 2,
-                                    height: 1.5,
-                                  ),
-                                ),
-                                const SizedBox(height: 24),
-                                const Text(
-                                  'Karena hal-hal paling bermakna yang kita bawa bukanlah sekadar kepemilikan.',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontFamily: 'serif',
-                                    fontStyle: FontStyle.italic,
-                                    fontSize: 13,
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                const Text(
-                                  'Mereka menjadi bagian dari siapa kita.',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontFamily: 'serif',
-                                    fontStyle: FontStyle.italic,
-                                    fontSize: 13,
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                                const SizedBox(height: 48),
-                                Container(
-                                  padding: const EdgeInsets.only(bottom: 8),
-                                  decoration: const BoxDecoration(
-                                      border: Border(
-                                          bottom: BorderSide(
-                                              color: Colors.black, width: 1.5))),
-                                  child: const Text(
-                                    'SELAMAT DATANG DI SOLHÉR CIRCLE.',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w900,
-                                      letterSpacing: 3,
-                                    ),
-                                  ),
-                                )
-                              ],
-                            ),
-                          )
-                        ],
-                      ),
-                    ),
-                  ),
-                )
-              ],
-            ),
+              )
+            ],
           ),
         );
       },

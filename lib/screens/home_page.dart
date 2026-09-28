@@ -17358,184 +17358,6 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
-  // @override
-  // Widget build(BuildContext context) {
-  //   return MultiBlocProvider(
-  //     providers: [
-  //       BlocProvider(
-  //         create: (context) =>
-  //             CategoryBloc(categoryRepository: CategoryRepository())
-  //               ..add(FetchCategories()),
-  //       ),
-  //       BlocProvider(
-  //         create: (context) =>
-  //             ProductBloc(productRepository: ProductRepository())
-  //               ..add(FetchActiveProductsEvent()),
-  //       ),
-  //       BlocProvider(
-  //         create: (context) =>
-  //             CartBloc(cartRepository: CartRepository())..add(FetchCartEvent()),
-  //       ),
-  //       BlocProvider(
-  //         create: (context) => NotifBloc(notifRepository: NotifRepository())
-  //           ..add(FetchNotifsEvent()),
-  //       ),
-  //     ],
-  //     child: Scaffold(
-  //       backgroundColor: Colors.white,
-  //       appBar: AppBar(
-  //         title: const Text('Home',
-  //             style:
-  //                 TextStyle(fontWeight: FontWeight.w900, fontFamily: 'serif')),
-  //         backgroundColor: Colors.grey[500],
-  //         foregroundColor: Colors.white,
-  //         elevation: 2,
-  //         centerTitle: true,
-  //         actions: [
-  //           IconButton(
-  //             icon: const Icon(Icons.chat_bubble_outline),
-  //             onPressed: () {
-  //               final authState = context.read<AuthBloc>().state;
-  //               if (authState is AuthAuthenticated) {
-  //                 Navigator.push(
-  //                   context,
-  //                   MaterialPageRoute(
-  //                     builder: (_) => BlocProvider(
-  //                       create: (context) => ChatBloc(
-  //                         chatRepository: ChatRepository(),
-  //                       ),
-  //                       child: const ChatListPage(),
-  //                     ),
-  //                   ),
-  //                 );
-  //               } else {
-  //                 ScaffoldMessenger.of(context).showSnackBar(
-  //                   const SnackBar(
-  //                     content:
-  //                         Text("Silakan login untuk mengakses layanan chat."),
-  //                     backgroundColor: Colors.red,
-  //                   ),
-  //                 );
-  //               }
-  //             },
-  //           ),
-  //           IconButton(
-  //             icon: const Icon(Icons.search),
-  //             onPressed: () {
-  //               Navigator.push(
-  //                 context,
-  //                 MaterialPageRoute(builder: (_) => const ProductSearchPage()),
-  //               ).then((_) => _loadRecentlyViewed());
-  //             },
-  //           ),
-  //           BlocBuilder<CartBloc, CartState>(
-  //             builder: (context, state) {
-  //               int cartItemCount = 0;
-  //               if (state is CartLoaded) {
-  //                 cartItemCount =
-  //                     state.items.fold(0, (sum, item) => sum + item.quantity);
-  //               }
-
-  //               return Stack(
-  //                 alignment: Alignment.center,
-  //                 children: [
-  //                   // 👇 PERBAIKAN: TOMBOL KERANJANG BEBAS AKSES GUEST 👇
-  //                   IconButton(
-  //                     icon: const Icon(Icons.shopping_bag_outlined),
-  //                     onPressed: () {
-  //                       // Bebas masuk keranjang, tidak perlu pengecekan login!
-  //                       Navigator.push(
-  //                         context,
-  //                         MaterialPageRoute(
-  //                           builder: (_) => BlocProvider.value(
-  //                             value: context.read<CartBloc>(),
-  //                             child: const CartPage(),
-  //                           ),
-  //                         ),
-  //                       ).then((_) {
-  //                         context.read<CartBloc>().add(FetchCartEvent());
-  //                       });
-  //                     },
-  //                   ),
-  //                   // 👆 ========================================= 👆
-  //                   if (cartItemCount > 0)
-  //                     Positioned(
-  //                       right: 8,
-  //                       top: 8,
-  //                       child: Container(
-  //                         padding: const EdgeInsets.all(4),
-  //                         decoration: const BoxDecoration(
-  //                           color: Colors.red,
-  //                           shape: BoxShape.circle,
-  //                         ),
-  //                         child: Text(
-  //                           '$cartItemCount',
-  //                           style: const TextStyle(
-  //                             color: Colors.white,
-  //                             fontSize: 10,
-  //                             fontWeight: FontWeight.bold,
-  //                           ),
-  //                         ),
-  //                       ),
-  //                     )
-  //                 ],
-  //               );
-  //             },
-  //           ),
-  //           const SizedBox(width: 8),
-  //         ],
-  //       ),
-  //       body: RefreshIndicator(
-  //         color: Colors.black,
-  //         onRefresh: () async {
-  //           // Panggil semua event BLoC untuk me-refresh data katalog secara paralel
-  //           context.read<CategoryBloc>().add(FetchCategories());
-  //           context.read<ProductBloc>().add(FetchActiveProductsEvent());
-  //           context.read<CartBloc>().add(FetchCartEvent());
-  //           context.read<NotifBloc>().add(FetchNotifsEvent());
-
-  //           // Muat ulang ulasan publik dan produk yang terakhir dilihat
-  //           await _fetchLatestReviews();
-  //           await _loadRecentlyViewed();
-  //         },
-  //         child: SafeArea(
-  //           child: SingleChildScrollView(
-  //             physics: const AlwaysScrollableScrollPhysics(),
-  //             child: Column(
-  //               crossAxisAlignment: CrossAxisAlignment.start,
-  //               children: [
-  //                 _buildHeader(),
-  //                 _buildBannerSlider(),
-  //                 _buildWelcomePromoBanner(),
-  //                 _buildCategoryFilters(),
-  //                 _buildHorizontalProductList(),
-  //                 _buildBestSellerSection(),
-  //                 _buildAffiliateBanner(),
-  //                 _buildRecentlyViewedSection(),
-  //                 _buildCustomerReviews(),
-  //                 _buildMembershipTeaser(),
-  //                 _buildValueProposition(),
-  //                 const SizedBox(height: 40),
-  //               ],
-  //             ),
-  //           ),
-  //         ),
-  //       ),
-  //       floatingActionButton: FloatingActionButton(
-  //         backgroundColor: const Color(0xFF25D366),
-  //         foregroundColor: Colors.white,
-  //         elevation: 4,
-  //         onPressed: _openWhatsApp,
-  //         child: Image.asset(
-  //           'assets/icons/wa_icon.png',
-  //           width: 32,
-  //           height: 32,
-  //         ),
-  //       ),
-  //     ),
-  //   );
-  // }
-
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
@@ -17617,9 +17439,11 @@ class _HomePageState extends State<HomePage> {
                 return Stack(
                   alignment: Alignment.center,
                   children: [
+                    // 👇 PERBAIKAN: TOMBOL KERANJANG BEBAS AKSES GUEST 👇
                     IconButton(
                       icon: const Icon(Icons.shopping_bag_outlined),
                       onPressed: () {
+                        // Bebas masuk keranjang, tidak perlu pengecekan login!
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -17633,6 +17457,7 @@ class _HomePageState extends State<HomePage> {
                         });
                       },
                     ),
+                    // 👆 ========================================= 👆
                     if (cartItemCount > 0)
                       Positioned(
                         right: 8,
@@ -17660,56 +17485,25 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(width: 8),
           ],
         ),
-
-        // 👇 PERBAIKAN: Pisahkan SafeArea dari RefreshIndicator 👇
         body: SafeArea(
-          // 👇 Letakkan RefreshIndicator Murni di atas ListView/SingleChildScrollView
-          child: RefreshIndicator(
-            color: Colors.black,
-            onRefresh: () async {
-              // Nonaktifkan scroll event sementara saat merefresh agar tidak tabrakan
-              setState(() => _isFetchingMore = true);
-
-              // Tembak request ke backend secara bersamaan menggunakan Future.wait
-              await Future.wait([
-                Future.microtask(
-                    () => context.read<CategoryBloc>().add(FetchCategories())),
-                Future.microtask(() => context
-                    .read<ProductBloc>()
-                    .add(FetchActiveProductsEvent())),
-                Future.microtask(
-                    () => context.read<CartBloc>().add(FetchCartEvent())),
-                Future.microtask(
-                    () => context.read<NotifBloc>().add(FetchNotifsEvent())),
-                _fetchLatestReviews(),
-                _loadRecentlyViewed(),
-              ]);
-
-              // Simulasikan jeda sebentar agar animasi putar terlihat
-              await Future.delayed(const Duration(milliseconds: 500));
-              if (mounted) setState(() => _isFetchingMore = false);
-            },
-            child: SingleChildScrollView(
-              // PENTING: ScrollController utama harus di-attach di sini!
-              controller: _scrollController,
-              physics: const AlwaysScrollableScrollPhysics(),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildHeader(),
-                  _buildBannerSlider(),
-                  _buildWelcomePromoBanner(),
-                  _buildCategoryFilters(),
-                  _buildHorizontalProductList(),
-                  _buildBestSellerSection(),
-                  _buildAffiliateBanner(),
-                  _buildRecentlyViewedSection(),
-                  _buildCustomerReviews(),
-                  _buildMembershipTeaser(),
-                  _buildValueProposition(),
-                  const SizedBox(height: 40),
-                ],
-              ),
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildHeader(),
+                _buildBannerSlider(),
+                _buildWelcomePromoBanner(),
+                _buildCategoryFilters(),
+                _buildHorizontalProductList(),
+                _buildBestSellerSection(),
+                _buildAffiliateBanner(),
+                _buildRecentlyViewedSection(),
+                _buildCustomerReviews(),
+                _buildMembershipTeaser(),
+                _buildValueProposition(),
+                const SizedBox(height: 40),
+              ],
             ),
           ),
         ),
