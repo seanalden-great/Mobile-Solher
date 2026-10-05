@@ -7264,7 +7264,7 @@ class _PaymentPageState extends State<PaymentPage> {
             parsedRates.add(ShippingRateModel.fromJson(
                 Map<String, dynamic>.from(rateData)));
           } catch (e) {
-            debugPrint("Skipping unparseable rate: $e");
+            // debugPrint("Skipping unparseable rate: $e");
           }
         }
 
@@ -7556,7 +7556,7 @@ class _PaymentPageState extends State<PaymentPage> {
                       'product': safeProdMap,
                     }));
                   } catch (err) {
-                    debugPrint("Skipping corrupted cart item: $err");
+                    // debugPrint("Skipping corrupted cart item: $err");
                   }
                 }
               }

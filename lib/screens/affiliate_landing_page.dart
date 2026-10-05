@@ -1519,7 +1519,7 @@ class _AffiliateLandingPageState extends State<AffiliateLandingPage> {
           }
         }
       } catch (e) {
-        debugPrint('Error parsing user data: $e');
+        // debugPrint('Error parsing user data: $e');
       }
     }
   }

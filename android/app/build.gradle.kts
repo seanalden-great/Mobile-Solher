@@ -1,3 +1,6 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
@@ -6,6 +9,13 @@ plugins {
 
     // 👇 TAMBAHKAN 1 BARIS INI 👇
     id("com.google.gms.google-services")
+}
+
+// 👇 1. BACA FILE KEY.PROPERTIES 👇
+val keystoreProperties = Properties()
+val keystorePropertiesFile = rootProject.file("key.properties")
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
 
 android {
@@ -25,11 +35,19 @@ android {
     //     jvmTarget = "17"
     // }
 
+    // 👇 2. KONFIGURASI SIGNING UNTUK RILIS 👇
+    signingConfigs {
+        create("release") {
+            keyAlias = keystoreProperties["keyAlias"] as String?
+            keyPassword = keystoreProperties["keyPassword"] as String?
+            storeFile = keystoreProperties["storeFile"]?.let { file(it) }
+            storePassword = keystoreProperties["storePassword"] as String?
+        }
+    }
+
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.solher_mobile"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
+        // TODO: Specify your own unique Application ID
+        applicationId = "com.solher.mobile" // 👇 Ubah nama bundle ID ini jika perlu
         minSdk = 23
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode()
@@ -38,9 +56,10 @@ android {
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            // 👇 3. TERAPKAN KONFIGURASI SIGNING KE BUILD RELEASE 👇
+            signingConfig = signingConfigs.getByName("release")
+            isMinifyEnabled = true  // Mengurangi ukuran APK/AAB dan menyembunyikan kode
+            isShrinkResources = true // Menghapus aset yang tidak dipakai
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }

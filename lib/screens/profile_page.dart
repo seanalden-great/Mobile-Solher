@@ -4129,137 +4129,149 @@ class _ProfilePageState extends State<ProfilePage> {
 
                 double completionPercent = (score / total) * 100;
 
-                return SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.all(24.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('Manage your details and address',
-                          style: TextStyle(color: Colors.grey, fontSize: 14)),
-                      const SizedBox(height: 24),
+                return RefreshIndicator(
+                  color: Colors.black, // Warna elegan khas Solher
+                  onRefresh: () async {
+                    // Memicu ulang event BLoC untuk menarik data Profil & Alamat terbaru
+                    context.read<AuthBloc>().add(CheckLoginStatusEvent());
+                    context.read<AddressBloc>().add(FetchAddresses());
 
-                      _buildProfileCard(context, user, firstName, lastName,
-                          email, phone, avatarUrl),
-                      const SizedBox(height: 24),
-
-                      // 👇 WIDGET 1: GAMIFIKASI COMPLETENESS 👇
-                      if (completionPercent < 100)
-                        _buildCompletenessBanner(
-                            completionPercent, missingFields, user),
-
-                      _buildSolherClubCard(points),
-                      const SizedBox(height: 32),
-
-                      // 👇 WIDGET 2: QUICK ACTION GRID 👇
-                      const Text('Akses Cepat',
-                          style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'serif')),
-                      const SizedBox(height: 16),
-                      _buildQuickActionGrid(context),
-                      const SizedBox(height: 32),
-
-                      // 👇 EDUKASI ADDRESS 👇
-                      const Text('Alamat Pengiriman',
-                          style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'serif')),
-                      const SizedBox(height: 4),
-                      const Text(
-                          'Alamat berlabel Utama akan diisikan otomatis saat Anda checkout.',
-                          style: TextStyle(color: Colors.grey, fontSize: 12)),
-                      const SizedBox(height: 16),
-                      _buildAddressSection(addressState),
-                      const SizedBox(height: 32),
-
-                      const Text('Pusat Bantuan & Legal',
-                          style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'serif')),
-                      const SizedBox(height: 16),
-                      _buildMenuGroup([
-                        _buildCompactMenuItem(
-                            Icons.headset_mic_outlined,
-                            'Hubungi Pesan',
-                            'Kirim pesan via formulir',
-                            Colors.orange.shade600, () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => BlocProvider(
-                                  create: (context) => ContactBloc(
-                                      contactRepository: ContactRepository()),
-                                  child: const ContactPage(),
-                                ),
-                              ));
-                        }),
-                        _buildCompactMenuItem(
-                            Icons.support_agent_outlined,
-                            'Layanan Pelanggan',
-                            'Informasi kontak & jam kerja',
-                            Colors.teal.shade600, () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (_) => const CustomerCarePage()));
-                        }),
-                        _buildCompactMenuItem(
-                            Icons.help_outline,
-                            'Bantuan & FAQ',
-                            'Temukan jawaban cepat',
-                            Colors.blue.shade600, () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (_) => const FaqPage()));
-                        }),
-                        _buildCompactMenuItem(
-                            Icons.local_shipping_outlined,
-                            'Kebijakan Pengiriman',
-                            'Estimasi waktu dan tarif',
-                            Colors.brown.shade600, () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (_) => const ShippingPolicyPage()));
-                        }),
-                        _buildCompactMenuItem(
-                            Icons.currency_exchange_outlined,
-                            'Pengembalian Dana',
-                            'Syarat proses pengembalian',
-                            Colors.pink.shade600, () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (_) => const RefundPolicyPage()));
-                        }),
-                        _buildCompactMenuItem(
-                            Icons.description_outlined,
-                            'Syarat & Ketentuan',
-                            'Kebijakan layanan',
-                            Colors.blueGrey.shade600, () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (_) => const TermsConditionPage()));
-                        }),
-                        _buildCompactMenuItem(
-                            Icons.shield_outlined,
-                            'Kebijakan Privasi',
-                            'Perlindungan data Anda',
-                            Colors.indigo.shade600, () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (_) => const PrivacyPolicyPage()));
-                        }),
-                      ]),
-                      const SizedBox(height: 40),
-                    ],
+                    // Berikan sedikit jeda animasi agar putaran loading terasa mulus
+                    await Future.delayed(const Duration(milliseconds: 1000));
+                  },
+                  child: SingleChildScrollView(
+                    // physics: const BouncingScrollPhysics(),
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.all(24.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Manage your details and address',
+                            style: TextStyle(color: Colors.grey, fontSize: 14)),
+                        const SizedBox(height: 24),
+                  
+                        _buildProfileCard(context, user, firstName, lastName,
+                            email, phone, avatarUrl),
+                        const SizedBox(height: 24),
+                  
+                        // 👇 WIDGET 1: GAMIFIKASI COMPLETENESS 👇
+                        if (completionPercent < 100)
+                          _buildCompletenessBanner(
+                              completionPercent, missingFields, user),
+                  
+                        _buildSolherClubCard(points),
+                        const SizedBox(height: 32),
+                  
+                        // 👇 WIDGET 2: QUICK ACTION GRID 👇
+                        const Text('Akses Cepat',
+                            style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'serif')),
+                        const SizedBox(height: 16),
+                        _buildQuickActionGrid(context),
+                        const SizedBox(height: 32),
+                  
+                        // 👇 EDUKASI ADDRESS 👇
+                        const Text('Alamat Pengiriman',
+                            style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'serif')),
+                        const SizedBox(height: 4),
+                        const Text(
+                            'Alamat berlabel Utama akan diisikan otomatis saat Anda checkout.',
+                            style: TextStyle(color: Colors.grey, fontSize: 12)),
+                        const SizedBox(height: 16),
+                        _buildAddressSection(addressState),
+                        const SizedBox(height: 32),
+                  
+                        const Text('Pusat Bantuan & Legal',
+                            style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'serif')),
+                        const SizedBox(height: 16),
+                        _buildMenuGroup([
+                          _buildCompactMenuItem(
+                              Icons.headset_mic_outlined,
+                              'Hubungi Pesan',
+                              'Kirim pesan via formulir',
+                              Colors.orange.shade600, () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => BlocProvider(
+                                    create: (context) => ContactBloc(
+                                        contactRepository: ContactRepository()),
+                                    child: const ContactPage(),
+                                  ),
+                                ));
+                          }),
+                          _buildCompactMenuItem(
+                              Icons.support_agent_outlined,
+                              'Layanan Pelanggan',
+                              'Informasi kontak & jam kerja',
+                              Colors.teal.shade600, () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) => const CustomerCarePage()));
+                          }),
+                          _buildCompactMenuItem(
+                              Icons.help_outline,
+                              'Bantuan & FAQ',
+                              'Temukan jawaban cepat',
+                              Colors.blue.shade600, () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) => const FaqPage()));
+                          }),
+                          _buildCompactMenuItem(
+                              Icons.local_shipping_outlined,
+                              'Kebijakan Pengiriman',
+                              'Estimasi waktu dan tarif',
+                              Colors.brown.shade600, () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) => const ShippingPolicyPage()));
+                          }),
+                          _buildCompactMenuItem(
+                              Icons.currency_exchange_outlined,
+                              'Pengembalian Dana',
+                              'Syarat proses pengembalian',
+                              Colors.pink.shade600, () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) => const RefundPolicyPage()));
+                          }),
+                          _buildCompactMenuItem(
+                              Icons.description_outlined,
+                              'Syarat & Ketentuan',
+                              'Kebijakan layanan',
+                              Colors.blueGrey.shade600, () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) => const TermsConditionPage()));
+                          }),
+                          _buildCompactMenuItem(
+                              Icons.shield_outlined,
+                              'Kebijakan Privasi',
+                              'Perlindungan data Anda',
+                              Colors.indigo.shade600, () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) => const PrivacyPolicyPage()));
+                          }),
+                        ]),
+                        const SizedBox(height: 40),
+                      ],
+                    ),
                   ),
                 );
               });

@@ -778,14 +778,14 @@ class _MainNavigationState extends State<MainNavigation> {
 
       await pusher.subscribe(channelName: 'user.$_currentUserId');
       await pusher.connect();
-      debugPrint("✅ Pusher terhubung untuk User ID: $_currentUserId");
+      // debugPrint("✅ Pusher terhubung untuk User ID: $_currentUserId");
     } catch (e) {
-      debugPrint("❌ Pusher Init Error: $e");
+      // debugPrint("❌ Pusher Init Error: $e");
     }
   }
 
   void _onPusherEvent(PusherEvent event) {
-    debugPrint("🔔 Event Diterima: ${event.eventName}");
+    // debugPrint("🔔 Event Diterima: ${event.eventName}");
 
     if (event.eventName == 'message.new' ||
         event.eventName.contains('MessageSent')) {
@@ -813,9 +813,9 @@ class _MainNavigationState extends State<MainNavigation> {
     try {
       await pusher.unsubscribe(channelName: 'user.$_currentUserId');
       await pusher.disconnect();
-      debugPrint("🛑 Pusher diputus.");
+      // debugPrint("🛑 Pusher diputus.");
     } catch (e) {
-      debugPrint("Error disconnecting Pusher: $e");
+      // debugPrint("Error disconnecting Pusher: $e");
     }
   }
 
